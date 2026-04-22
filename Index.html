@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌟 Tara Foodies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  :root {
+    --rose:#F43F5E;--rose-light:#FB7185;--rose-pale:#FFF1F3;
+    --purple:#7C3AED;--purple-light:#A78BFA;
+    --teal:#0D9488;--teal-light:#2DD4BF;
+    --amber:#F59E0B;
+    --cream:#FFFBF7;--white:#FFFFFF;--dark:#1E1B2E;
+    --gray:#6B7280;--light-gray:#F3F4F6;--border:#E5E7EB;
+    --red:#EF4444;--green:#10B981;
+    --shadow:0 2px 16px rgba(0,0,0,0.08);--shadow-lg:0 8px 40px rgba(0,0,0,0.14);
+    --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+
+  /* LOADING */
+  #loadingScreen{position:fixed;inset:0;background:linear-gradient(145deg,#F43F5E,#7C3AED);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:white;}
+  .loading-logo{font-size:64px;margin-bottom:16px;animation:pulse 1.5s infinite;}
+  .loading-title{font-family:'Nunito',sans-serif;font-size:28px;font-weight:900;margin-bottom:8px;}
+  .loading-sub{font-size:14px;opacity:0.8;margin-bottom:24px;}
+  .loading-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.3);border-top:4px solid white;border-radius:50%;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+  /* LOGIN */
+  #loginScreen{min-height:100vh;background:linear-gradient(145deg,#F43F5E 0%,#7C3AED 60%,#0D9488 100%);display:none;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
+  #loginScreen.show{display:flex;}
+  #loginScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,255,255,0.15) 0%,transparent 60%);}
+  .login-card{background:white;border-radius:28px;padding:36px 28px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);position:relative;z-index:1;}
+  .login-logo{font-size:52px;text-align:center;margin-bottom:6px;}
+  .login-title{font-family:'Nunito',sans-serif;font-size:26px;font-weight:900;color:var(--rose);text-align:center;}
+  .login-sub{color:var(--gray);font-size:13px;text-align:center;margin-bottom:24px;margin-top:4px;}
+  .login-type-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .login-type-card{border:2px solid var(--border);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;background:white;}
+  .login-type-card:hover,.login-type-card.selected{border-color:var(--rose);background:var(--rose-pale);}
+  .login-type-icon{font-size:28px;margin-bottom:6px;}
+  .login-type-label{font-size:13px;font-weight:700;}
+  .login-type-sub{font-size:11px;color:var(--gray);margin-top:2px;}
+  .form-group{margin-bottom:14px;}
+  .form-label{display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+  .form-input,.form-select,.form-textarea{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--dark);background:white;outline:none;transition:border .2s;}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--rose);}
+  .form-textarea{resize:vertical;min-height:80px;}
+  .btn{padding:13px 20px;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;width:100%;transition:all .15s;}
+  .btn:active{transform:scale(0.97);}
+  .btn-rose{background:linear-gradient(135deg,var(--rose),var(--rose-light));color:white;box-shadow:0 4px 14px rgba(244,63,94,0.4);}
+  .btn-purple{background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;box-shadow:0 4px 14px rgba(124,58,237,0.4);}
+  .btn-teal{background:linear-gradient(135deg,var(--teal),var(--teal-light));color:white;box-shadow:0 4px 14px rgba(13,148,136,0.35);}
+  .btn-amber{background:linear-gradient(135deg,var(--amber),#FCD34D);color:white;}
+  .btn-gray{background:var(--light-gray);color:var(--dark);}
+  .btn-sm{padding:7px 13px;font-size:12px;width:auto;}
+  .btn-danger{background:var(--red);color:white;}
+  .divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--gray);font-size:12px;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .member-select-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
+  .member-select-btn{background:var(--light-gray);border:2px solid transparent;border-radius:12px;padding:10px 14px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;transition:all .2s;}
+  .member-select-btn:hover{border-color:var(--purple);}
+  .mini-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--purple-light));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:12px;flex-shrink:0;}
+
+  /* APP */
+  #app{display:none;}
+  #app.show{display:block;}
+  .topbar{background:linear-gradient(135deg,var(--rose),#E11D48);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(244,63,94,0.3);}
+  .topbar-left{display:flex;align-items:center;gap:10px;}
+  .topbar-title{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;}
+  .topbar-user{font-size:11px;opacity:0.85;}
+  .topbar-right{display:flex;align-items:center;gap:6px;}
+  .sync-indicator{font-size:10px;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;}
+  .sync-dot.offline{background:#f87171;animation:pulse 1s infinite;}
+  .lang-btn{background:rgba(255,255,255,0.22);border:none;color:white;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;}
+  .logout-btn{background:rgba(255,255,255,0.22);border:none;color:white;padding:7px 12px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;}
+  .nav-tabs{display:flex;background:white;border-bottom:2px solid var(--border);overflow-x:auto;position:sticky;top:56px;z-index:99;scrollbar-width:none;}
+  .nav-tabs::-webkit-scrollbar{display:none;}
+  .nav-tab{flex:1;min-width:60px;padding:10px 4px 8px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:var(--gray);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;position:relative;}
+  .nav-tab.active{color:var(--rose);border-bottom-color:var(--rose);}
+  .nav-tab .icon{font-size:17px;}
+  .nav-badge{position:absolute;top:4px;right:6px;background:var(--rose);color:white;border-radius:10px;font-size:9px;font-weight:800;padding:1px 5px;min-width:16px;text-align:center;}
+  .content{padding:14px;max-width:600px;margin:0 auto;}
+  .section{display:none;}
+  .section.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .card-title{font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .menu-display{background:linear-gradient(135deg,#FFF1F3,#F5F3FF);border-radius:12px;padding:16px;border-left:4px solid var(--rose);}
+  .menu-date{font-size:11px;color:var(--gray);margin-bottom:5px;font-weight:600;}
+  .menu-text{font-size:15px;font-weight:700;color:var(--dark);line-height:1.6;}
+  .menu-empty{color:var(--gray);font-style:italic;font-weight:400;}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat-card{background:white;border-radius:14px;padding:16px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .stat-num{font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;}
+  .stat-label{font-size:11px;color:var(--gray);margin-top:2px;font-weight:600;}
+  .stat-card.rose .stat-num{color:var(--rose);}
+  .stat-card.purple .stat-num{color:var(--purple);}
+  .stat-card.teal .stat-num{color:var(--teal);}
+  .stat-card.amber .stat-num{color:var(--amber);}
+  .member-item{display:flex;align-items:flex-start;justify-content:space-between;padding:13px;border-radius:12px;background:var(--light-gray);margin-bottom:8px;gap:8px;flex-wrap:wrap;}
+  .member-info{display:flex;align-items:center;gap:10px;flex:1;}
+  .member-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--purple-light));display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;color:white;font-size:15px;flex-shrink:0;}
+  .member-name{font-weight:700;font-size:14px;}
+  .member-sub{font-size:11px;color:var(--gray);margin-top:2px;}
+  .member-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .badge{padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+  .badge-paid{background:#D1FAE5;color:#065F46;}
+  .badge-unpaid{background:#FEE2E2;color:#991B1B;}
+  .badge-partial{background:#FEF3C7;color:#92400E;}
+  .payment-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px;border-radius:10px;background:var(--light-gray);margin-bottom:8px;gap:8px;}
+  .payment-name{font-weight:700;font-size:13px;}
+  .payment-detail{font-size:11px;color:var(--gray);margin-top:2px;}
+  .payment-amount{font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;color:var(--teal);}
+  .attendance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;}
+  .att-member{background:var(--light-gray);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+  .att-member.present{background:#D1FAE5;border-color:var(--green);}
+  .att-member.absent{background:#FEE2E2;border-color:var(--red);}
+  .att-member.leave{background:#FEF3C7;border-color:var(--amber);opacity:0.7;}
+  .att-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--purple-light));margin:0 auto 5px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:12px;}
+  .att-member.present .att-avatar{background:linear-gradient(135deg,var(--teal),var(--teal-light));}
+  .att-member.absent .att-avatar{background:linear-gradient(135deg,#EF4444,#F87171);}
+  .att-name{font-size:10px;font-weight:700;}
+  .att-status{font-size:9px;margin-top:2px;font-weight:600;}
+  .att-member.present .att-status{color:var(--teal);}
+  .att-member.absent .att-status{color:var(--red);}
+  .att-member.leave .att-status{color:var(--amber);}
+  .menu-history-item{padding:12px 14px;border-radius:10px;background:var(--light-gray);margin-bottom:8px;}
+  .notice-item{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid var(--amber);}
+  .notice-title{font-weight:700;font-size:14px;}
+  .notice-meta{font-size:11px;color:var(--gray);margin-top:4px;}
+  .notice-body{font-size:13px;margin-top:6px;color:var(--dark);}
+  .expense-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--light-gray);border-radius:10px;margin-bottom:8px;}
+  .star-btn{font-size:26px;cursor:pointer;transition:transform .15s;filter:grayscale(1);}
+  .star-btn.active{filter:none;transform:scale(1.1);}
+  .leave-item{background:#FFF1F3;border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:4px solid var(--rose);}
+  .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;}
+  .upload-zone:hover{border-color:var(--rose);background:var(--rose-pale);}
+  .uploaded-preview{width:100%;max-height:180px;object-fit:contain;border-radius:10px;margin-top:10px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--dark);color:white;padding:12px 22px;border-radius:100px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+  .modal-overlay.show{opacity:1;pointer-events:all;}
+  .modal-box{background:white;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s;}
+  .modal-overlay.show .modal-box{transform:translateY(0);}
+  .modal-title{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;margin-bottom:16px;}
+  .modal-close{float:right;background:var(--light-gray);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;}
+  .admin-only{display:none;}
+  body.admin-mode .admin-only{display:block;}
+  .member-only{display:none;}
+  body.member-mode .member-only{display:block;}
+  .admin-tab{display:none;}
+  body.admin-mode .admin-tab{display:flex;}
+  .member-tab{display:none;}
+  body.member-mode .member-tab{display:flex;}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle{position:relative;width:48px;height:26px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:26px;cursor:pointer;transition:.3s;}
+  .toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+  .toggle input:checked+.toggle-slider{background:var(--rose);}
+  .toggle input:checked+.toggle-slider::before{transform:translateX(22px);}
+  .mess-off-banner{background:linear-gradient(135deg,#FEE2E2,#FFF1F3);border:2px solid var(--red);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
+  .mess-off-text{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--red);}
+  .mess-on-banner{background:linear-gradient(135deg,#D1FAE5,#F0FDF4);border:2px solid var(--green);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
+  .mess-on-text{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--green);}
+  .billing-card{background:linear-gradient(135deg,#F5F3FF,#FFF1F3);border-radius:12px;padding:16px;border-left:4px solid var(--purple);margin-bottom:12px;}
+  .billing-amount{font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--purple);margin-top:6px;}
+  .carry-forward-card{background:linear-gradient(135deg,#D1FAE5,#F0FDF4);border-radius:12px;padding:14px;border-left:4px solid var(--teal);margin-bottom:12px;}
+  .carry-forward-amt{font-family:'Nunito',sans-serif;font-size:22px;font-weight:900;color:var(--teal);}
+  .qr-card{background:linear-gradient(135deg,#F5F3FF,#FFF1F3);border-radius:var(--radius);padding:24px;text-align:center;border:2px dashed var(--purple-light);}
+  .qr-img{width:180px;height:180px;object-fit:contain;border-radius:12px;border:3px solid var(--border);}
+  .tiffin-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--amber),#FCD34D);color:white;}
+  .hostel-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--purple),var(--purple-light));color:white;}
+  .paused-badge{background:#FEE2E2;color:#991B1B;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;}
+  .active-badge{background:#D1FAE5;color:#065F46;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;}
+
+  /* Chat */
+  .chat-container{display:flex;flex-direction:column;height:400px;}
+  .chat-messages{flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding:4px 0 8px;min-height:0;}
+  .chat-bubble{max-width:78%;padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.5;word-break:break-word;}
+  .chat-bubble.me{background:linear-gradient(135deg,var(--rose),var(--rose-light));color:white;align-self:flex-end;border-bottom-right-radius:4px;}
+  .chat-bubble.other{background:var(--light-gray);color:var(--dark);align-self:flex-start;border-bottom-left-radius:4px;}
+  .chat-time{font-size:10px;opacity:0.7;margin-top:3px;}
+  .chat-input-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .chat-input{flex:1;padding:11px 14px;border:2px solid var(--border);border-radius:24px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
+  .chat-input:focus{border-color:var(--rose);}
+  .chat-send{background:var(--rose);color:white;border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .chat-member-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;background:var(--light-gray);margin-bottom:8px;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+  .chat-member-item:hover,.chat-member-item.active-chat{border-color:var(--rose);background:var(--rose-pale);}
+  .unread-badge{background:var(--rose);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
+
+  /* Poll */
+  .poll-option{background:var(--light-gray);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative;overflow:hidden;}
+  .poll-option:hover{border-color:var(--purple);}
+  .poll-option.voted{border-color:var(--purple);}
+  .poll-bar{position:absolute;left:0;top:0;bottom:0;background:rgba(124,58,237,0.12);transition:width .4s;}
+  .poll-option-text{position:relative;font-weight:700;font-size:13px;}
+  .poll-pct{position:relative;font-size:11px;color:var(--purple);font-weight:700;margin-top:2px;}
+
+  /* Pending */
+  .pending-item{background:linear-gradient(135deg,#F5F3FF,#FFF1F3);border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid var(--purple);}
+  .pending-ss{width:100%;max-height:150px;object-fit:contain;border-radius:10px;margin:10px 0;cursor:pointer;border:2px solid var(--border);}
+
+  /* Rating */
+  .rating-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .rating-bar-label{font-size:11px;color:var(--gray);font-weight:600;width:60px;flex-shrink:0;text-align:right;}
+  .rating-bar-track{flex:1;background:var(--light-gray);border-radius:6px;height:16px;overflow:hidden;}
+  .rating-bar-fill{height:100%;background:linear-gradient(90deg,var(--amber),#FCD34D);border-radius:6px;transition:width .5s;}
+  .rating-bar-val{font-size:11px;font-weight:700;color:var(--amber);width:32px;}
+
+  /* PIN */
+  .pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .pin-box{background:white;border-radius:24px;padding:32px 28px;width:100%;max-width:320px;text-align:center;box-shadow:var(--shadow-lg);}
+  .pin-title{font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;margin-bottom:6px;}
+  .pin-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:20px;}
+  .pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);transition:all .2s;}
+  .pin-dot.filled{background:var(--rose);}
+  .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .pin-btn{background:var(--light-gray);border:none;border-radius:14px;padding:16px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:800;cursor:pointer;transition:all .15s;}
+  .pin-btn:active{transform:scale(0.93);background:var(--rose);color:white;}
+  .pin-btn.zero{grid-column:2;}
+  .pin-btn.del{background:var(--rose-pale);color:var(--rose);}
+  .pin-error{color:var(--red);font-size:12px;font-weight:700;margin-top:8px;min-height:16px;}
+
+  .bday-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(135deg,#FFF1F3,#F5F3FF);border-radius:12px;margin-bottom:8px;}
+  .empty-state{text-align:center;padding:28px 14px;color:var(--gray);}
+  .empty-icon{font-size:44px;margin-bottom:10px;}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+  .info-row:last-child{border-bottom:none;}
+  .info-key{font-size:13px;color:var(--gray);}
+  .info-val{font-weight:700;font-size:14px;}
+  .profile-header{background:linear-gradient(135deg,var(--rose),var(--purple));border-radius:var(--radius);padding:24px;text-align:center;color:white;margin-bottom:14px;}
+  .profile-avatar-big{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.25);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:30px;font-weight:900;border:3px solid rgba(255,255,255,0.4);}
+  .wa-btn{background:#25D366;color:white;border:none;padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .cost-highlight{background:linear-gradient(135deg,var(--teal),var(--teal-light));color:white;border-radius:14px;padding:18px;text-align:center;margin-bottom:14px;}
+  .tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-right:4px;}
+  .tag-present{background:#D1FAE5;color:#065F46;}
+  .tag-absent{background:#FEE2E2;color:#991B1B;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loading-logo">🌟</div>
+  <div class="loading-title">Tara Foodies</div>
+  <div class="loading-sub">Ghar jaisa khana, apna hisaab</div>
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- PIN -->
+<div id="pinOverlay" class="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <div style="font-size:40px;margin-bottom:8px">🔐</div>
+    <div class="pin-title" id="pinTitle">Admin PIN</div>
+    <div class="pin-sub" id="pinSub">Enter 4-digit PIN</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn zero" onclick="pinPress('0')">0</button>
+      <button class="pin-btn del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <button class="btn btn-gray" onclick="cancelPin()" style="margin-top:14px;font-size:13px;padding:10px">Cancel</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🌟</div>
+    <div class="login-title">Tara Foodies</div>
+    <div class="login-sub">Ghar jaisa khana, apna hisaab 🍽️</div>
+    <div class="login-type-cards">
+      <div class="login-type-card" onclick="selectLoginType('hostel')" id="typeHostel">
+        <div class="login-type-icon">🏠</div>
+        <div class="login-type-label">Hostel Girl</div>
+        <div class="login-type-sub">Mess mein khana</div>
+      </div>
+      <div class="login-type-card" onclick="selectLoginType('tiffin')" id="typeTiffin">
+        <div class="login-type-icon">🛵</div>
+        <div class="login-type-label">Tiffin Member</div>
+        <div class="login-type-sub">Bahar tiffin jaata</div>
+      </div>
+    </div>
+    <div id="loginFormArea"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span style="font-size:22px">🌟</span>
+      <div>
+        <div class="topbar-title">Tara Foodies</div>
+        <div class="topbar-user" id="topbarUser"></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-indicator"><div class="sync-dot" id="syncDot"></div><span id="syncText">Live</span></div>
+      <button class="lang-btn" onclick="toggleLang()">🌐 <span id="langLabel">हिं</span></button>
+      <button class="logout-btn" onclick="logout()">Exit</button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('home')" id="tab-home"><span class="icon">🏠</span><span>Home</span></button>
+    <button class="nav-tab" onclick="showSection('menu')" id="tab-menu"><span class="icon">🍛</span><span>Menu</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('attendance')" id="tab-attendance"><span class="icon">✅</span><span>Attend</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('members')" id="tab-members"><span class="icon">👥</span><span>Members</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('payments')" id="tab-payments"><span class="icon">💰</span><span>Pay</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('expenses')" id="tab-expenses"><span class="icon">🧾</span><span>Expense</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('notices')" id="tab-notices"><span class="icon">📢</span><span>Notice</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('settings')" id="tab-settings"><span class="icon">⚙️</span><span>Settings</span></button>
+    <button class="nav-tab member-tab" onclick="showSection('myattendance')" id="tab-myattendance"><span class="icon">📅</span><span>Attend</span></button>
+    <button class="nav-tab member-tab" onclick="showSection('mypayment')" id="tab-mypayment"><span class="icon">💳</span><span>Pay</span></button>
+    <button class="nav-tab member-tab" onclick="showSection('chat')" id="tab-chat"><span class="icon">💬</span><span>Chat</span><span class="nav-badge" id="memberChatBadge" style="display:none">0</span></button>
+    <button class="nav-tab member-tab" onclick="showSection('myprofile')" id="tab-myprofile"><span class="icon">👤</span><span>Profile</span></button>
+    <button class="nav-tab admin-tab" onclick="showSection('adminchat')" id="tab-adminchat"><span class="icon">💬</span><span>Chats</span><span class="nav-badge" id="adminChatBadge" style="display:none">0</span></button>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="section active" id="section-home">
+      <div id="messStatusBanner"></div>
+      <div class="card">
+        <div class="card-title">🍛 Today's Meal</div>
+        <div class="menu-display">
+          <div class="menu-date" id="todayDate"></div>
+          <div id="todayMenuText" class="menu-text menu-empty">Loading...</div>
+        </div>
+        <div id="todayRating" style="margin-top:12px;display:none">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px">⭐ Rate Today's Food</div>
+          <div style="display:flex;gap:8px;justify-content:center" id="ratingStars"></div>
+        </div>
+      </div>
+      <div class="admin-only">
+        <div class="stats-row">
+          <div class="stat-card rose"><div class="stat-num" id="statMembers">0</div><div class="stat-label">Total Members</div></div>
+          <div class="stat-card teal"><div class="stat-num" id="statPaid">₹0</div><div class="stat-label">Collected (Month)</div></div>
+          <div class="stat-card purple"><div class="stat-num" id="statPresent">0</div><div class="stat-label">Present Today</div></div>
+          <div class="stat-card amber"><div class="stat-num" id="statUnpaid">0</div><div class="stat-label">Dues Pending</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🍽️ Today's Headcount</div>
+          <div id="headcountDisplay"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⏳ Pending Verifications <span id="pendingBadge" style="background:var(--rose);color:white;border-radius:20px;padding:2px 9px;font-size:12px;margin-left:4px;display:none"></span></div>
+          <div id="pendingVerifList"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">✈️ Members on Leave</div>
+          <div id="adminLeaveView"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ Quick Actions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn btn-rose btn-sm" onclick="showSection('attendance')">✅ Attendance</button>
+            <button class="btn btn-teal btn-sm" onclick="showSection('payments')">💰 Payments</button>
+            <button class="btn btn-purple btn-sm" onclick="showSection('notices')">📢 Notice</button>
+            <button class="btn btn-sm" style="background:var(--amber);color:white" onclick="generateReport()">📊 Report</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">📊 Per Day Cost</div><div id="perDayCost"></div></div>
+        <div id="adminBdayCard" style="display:none"><div class="card"><div class="card-title">🎂 Upcoming Birthdays</div><div id="adminBdayList"></div></div></div>
+      </div>
+      <div class="member-only">
+        <div class="stats-row" id="memberStatCards"></div>
+        <div class="card"><div class="card-title">💎 Carry Forward</div><div id="memberCarryForwardHome"></div></div>
+        <div class="card"><div class="card-title">✅ Today's Attendance</div><div id="myTodayAttStatus"></div></div>
+        <div class="card" id="memberBillingCard" style="display:none"><div class="card-title">💰 My Bill This Month</div><div id="memberBillingContent"></div></div>
+        <div id="memberBdayCard" style="display:none"><div class="card"><div class="card-title">🎂 Upcoming Birthdays</div><div id="memberBdayList"></div></div></div>
+        <div id="memberComplaintCard" style="display:none"><div class="card"><div class="card-title">📣 Complaint Box</div><textarea class="form-textarea" id="complaintText" placeholder="Write anonymously..."></textarea><button class="btn btn-amber" onclick="submitComplaint()" style="margin-top:10px">📤 Submit Anonymously</button></div></div>
+        <div id="memberPollCard" style="display:none"><div class="card"><div class="card-title">📊 Active Poll</div><div id="memberPollContent"></div></div></div>
+        <div class="card"><div class="card-title">📢 Latest Notice</div><div id="latestNotice"></div></div>
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <div class="section" id="section-menu">
+      <div class="admin-only">
+        <div class="card">
+          <div class="card-title">📝 Set Today's Menu</div>
+          <div style="background:var(--light-gray);border-radius:12px;padding:14px;margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-weight:700;font-size:14px">Mess Status</div><div style="font-size:11px;color:var(--gray);margin-top:2px" id="messStatusText">Mess is ON</div></div>
+              <label class="toggle"><input type="checkbox" id="messOnToggle" onchange="toggleMessStatus()" checked><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="menuDate"></div>
+          <div class="form-group"><label class="form-label">What's for today?</label><textarea class="form-textarea" id="menuText" placeholder="e.g. Dal Chawal, Sabzi Roti..."></textarea></div>
+          <button class="btn btn-rose" onclick="saveMenu()">✅ Save Menu</button>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">📅 Menu History</div><div id="menuHistory"></div></div>
+      <div class="card"><div class="card-title">⭐ Rating History</div><div id="ratingGraph"></div></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="section" id="section-attendance">
+      <div class="card">
+        <div class="card-title">✅ Mark Attendance</div>
+        <div id="messOffAttWarning" style="display:none;background:#FEE2E2;border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;font-weight:700;color:var(--red)">🚫 Mess is OFF today</div>
+        <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="attDate" onchange="renderAttendance()"></div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:10px;font-weight:600">Tap: Present ✅ → Absent ❌ → Clear</div>
+        <div class="attendance-grid" id="attendanceGrid"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-teal" onclick="markAllPresent()" style="flex:1">✅ All Present</button>
+          <button class="btn btn-rose" onclick="saveAttendance()" style="flex:1">💾 Save</button>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">📊 Attendance Summary</div><div id="attendanceStats"></div></div>
+    </div>
+
+    <!-- MEMBERS -->
+    <div class="section" id="section-members">
+      <div class="card">
+        <div class="card-title">➕ Add New Member</div>
+        <div class="form-group"><label class="form-label">Member Type</label>
+          <select class="form-select" id="newMemberType" onchange="toggleMemberTypeFields()">
+            <option value="hostel">🏠 Hostel Girl</option>
+            <option value="tiffin">🛵 Tiffin Member</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="newMemberName" placeholder="Member's name"></div>
+        <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" class="form-input" id="newMemberPhone" placeholder="10-digit"></div>
+        <div class="form-group"><label class="form-label">Meal Plan</label>
+          <select class="form-select" id="newMemberMealPlan">
+            <option value="1">1 Meal/day (₹1500/month)</option>
+            <option value="2" selected>2 Meals/day (₹2400/month)</option>
+            <option value="3">3 Meals/day (₹2800/month)</option>
+          </select>
+        </div>
+        <div id="hostelFields">
+          <div class="form-group"><label class="form-label">Room No.</label><input type="text" class="form-input" id="newMemberRoom" placeholder="e.g. 204"></div>
+          <div class="form-group"><label class="form-label">Birthday (optional)</label><input type="date" class="form-input" id="newMemberBday"></div>
+        </div>
+        <div id="tiffinFields" style="display:none">
+          <div class="form-group"><label class="form-label">Delivery Address</label><textarea class="form-textarea" id="newMemberAddress" style="min-height:60px"></textarea></div>
+          <div class="form-group"><label class="form-label">Delivery Note</label><input type="text" class="form-input" id="newMemberDeliveryNote"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Opening Advance (₹)</label><input type="number" class="form-input" id="newMemberAdvance" placeholder="e.g. 2400"></div>
+        <button class="btn btn-rose" onclick="addMember()">➕ Add Member</button>
+      </div>
+      <div class="card"><div class="card-title">🏠 Hostel Members</div><div id="hostelMembersList"></div></div>
+      <div class="card"><div class="card-title">🛵 Tiffin Members</div><div id="tiffinMembersList"></div></div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="section" id="section-payments">
+      <div class="card">
+        <div class="card-title">⏳ Pending Verifications <span id="pendingBadge2" style="background:var(--rose);color:white;border-radius:20px;padding:2px 9px;font-size:12px;margin-left:4px;display:none"></span></div>
+        <div id="pendingVerifList2"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 Record Payment</div>
+        <div class="form-group"><label class="form-label">Member</label><select class="form-select" id="payMember"><option value="">-- Select --</option></select></div>
+        <div class="form-group"><label class="form-label">Amount (₹)</label><input type="number" class="form-input" id="payAmount" placeholder="e.g. 2400"></div>
+        <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="payDate"></div>
+        <div class="form-group"><label class="form-label">Note</label><input type="text" class="form-input" id="payNote" placeholder="e.g. June advance"></div>
+        <button class="btn btn-teal" onclick="addPayment()">✅ Save Payment</button>
+      </div>
+      <div class="card"><div class="card-title">📊 This Month's Summary</div><div id="paymentSummary"></div></div>
+      <div class="card"><div class="card-title">📜 Payment History</div><div id="paymentHistory"></div></div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="section" id="section-expenses">
+      <div class="admin-only">
+        <div class="card">
+          <div class="card-title">🧾 Add Expense</div>
+          <div class="form-group"><label class="form-label">Category</label>
+            <select class="form-select" id="expCat">
+              <option value="🛒 Vegetables">🛒 Vegetables</option>
+              <option value="🛢️ Gas/Fuel">🛢️ Gas/Fuel</option>
+              <option value="👨‍🍳 Cook Salary">👨‍🍳 Cook Salary</option>
+              <option value="🌾 Ration">🌾 Ration</option>
+              <option value="🧴 Utensils">🧴 Utensils</option>
+              <option value="⚡ Electricity">⚡ Electricity</option>
+              <option value="💧 Water">💧 Water</option>
+              <option value="📦 Other">📦 Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Description</label><input type="text" class="form-input" id="expDesc" placeholder="e.g. Monthly sabzi"></div>
+          <div class="form-group"><label class="form-label">Amount (₹)</label><input type="number" class="form-input" id="expAmount"></div>
+          <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="expDate"></div>
+          <button class="btn btn-rose" onclick="addExpense()">➕ Add Expense</button>
+        </div>
+        <div class="card"><div class="card-title">📊 Summary</div><div id="expenseSummary"></div></div>
+        <div class="card"><div class="card-title">📜 History</div><div id="expenseHistory"></div></div>
+      </div>
+    </div>
+
+    <!-- NOTICES -->
+    <div class="section" id="section-notices">
+      <div class="admin-only">
+        <div class="card">
+          <div class="card-title">📢 Post Announcement</div>
+          <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="noticeTitle"></div>
+          <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="noticeBody"></textarea></div>
+          <button class="btn btn-purple" onclick="postNotice()">📢 Post</button>
+        </div>
+        <div class="card" id="adminComplaintCard" style="display:none">
+          <div class="card-title">📣 Complaints <span id="complaintCount" style="background:var(--amber);color:white;border-radius:20px;padding:2px 9px;font-size:12px;margin-left:4px"></span></div>
+          <div id="complaintList"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Create Poll</div>
+          <div class="form-group"><label class="form-label">Question</label><input type="text" class="form-input" id="pollQuestion"></div>
+          <div class="form-group"><label class="form-label">Option 1</label><input type="text" class="form-input" id="pollOpt1"></div>
+          <div class="form-group"><label class="form-label">Option 2</label><input type="text" class="form-input" id="pollOpt2"></div>
+          <div class="form-group"><label class="form-label">Option 3 (optional)</label><input type="text" class="form-input" id="pollOpt3"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-purple" onclick="createPoll()" style="flex:1">📊 Create</button>
+            <button class="btn btn-gray btn-sm" onclick="deletePoll()">🗑</button>
+          </div>
+        </div>
+        <div class="card" id="pollResultCard" style="display:none"><div class="card-title">📊 Poll Results</div><div id="pollResults"></div></div>
+        <div class="card">
+          <div class="card-title">💼 Month End Closeout</div>
+          <div style="font-size:13px;color:var(--gray);margin-bottom:12px">Carry forward calculate karke apply karo.</div>
+          <button class="btn btn-teal" onclick="doMonthCloseout()">🔄 Calculate Carry Forward</button>
+          <div id="closeoutResult" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">📋 All Notices</div><div id="noticeList"></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="section" id="section-settings">
+      <div class="card">
+        <div class="card-title">⚙️ Feature Controls</div>
+        <div class="toggle-row">
+          <div><div style="font-weight:600;font-size:14px">📣 Complaint Box</div><div style="font-size:11px;color:var(--gray)">Members can submit anonymous complaints</div></div>
+          <label class="toggle"><input type="checkbox" id="toggleComplaint" onchange="saveSettings()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div style="font-weight:600;font-size:14px">🎂 Birthday Reminders</div><div style="font-size:11px;color:var(--gray)">Show upcoming birthdays</div></div>
+          <label class="toggle"><input type="checkbox" id="toggleBirthday" onchange="saveSettings()"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👑 Admin Profile</div>
+        <div class="form-group"><label class="form-label">Admin Name</label><input type="text" class="form-input" id="settingAdminName"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="settingAdminPhone"></div>
+        <div class="form-group"><label class="form-label">UPI ID</label><input type="text" class="form-input" id="settingAdminUPI"></div>
+        <div class="form-group"><label class="form-label">WhatsApp</label><input type="tel" class="form-input" id="settingAdminWA"></div>
+        <button class="btn btn-rose" onclick="saveAdminProfile()">💾 Save Profile</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🔐 Change PIN</div>
+        <div class="form-group"><label class="form-label">Current PIN</label><input type="password" class="form-input" id="currentPin" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">New PIN</label><input type="password" class="form-input" id="newPin" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">Confirm PIN</label><input type="password" class="form-input" id="confirmPin" maxlength="4"></div>
+        <button class="btn btn-purple" onclick="changePin()">🔐 Change PIN</button>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 Billing Rates</div>
+        <div class="form-group"><label class="form-label">1 Meal/day — Monthly Cap (₹)</label><input type="number" class="form-input" id="cap1"></div>
+        <div class="form-group"><label class="form-label">2 Meals/day — Monthly Cap (₹)</label><input type="number" class="form-input" id="cap2"></div>
+        <div class="form-group"><label class="form-label">3 Meals/day — Monthly Cap (₹)</label><input type="number" class="form-input" id="cap3"></div>
+        <div class="form-group"><label class="form-label">Mess Charge if 10+ days (₹)</label><input type="number" class="form-input" id="messChargeInput"></div>
+        <button class="btn btn-teal" onclick="saveBillingRates()">💾 Save Rates</button>
+      </div>
+    </div>
+
+    <!-- MY ATTENDANCE -->
+    <div class="section" id="section-myattendance">
+      <div class="card"><div class="card-title">📅 My Attendance</div><div id="myAttendanceContent"></div></div>
+      <div class="card">
+        <div class="card-title">✈️ Apply Leave</div>
+        <div class="form-group"><label class="form-label">From</label><input type="date" class="form-input" id="leaveFrom"></div>
+        <div class="form-group"><label class="form-label">To (optional)</label><input type="date" class="form-input" id="leaveTo"></div>
+        <div class="form-group"><label class="form-label">Reason</label><input type="text" class="form-input" id="leaveReason" placeholder="Going home..."></div>
+        <button class="btn btn-rose" onclick="applyLeave()">📩 Notify Admin</button>
+      </div>
+      <div class="card"><div class="card-title">📋 My Leave Notes</div><div id="myLeaveHistory"></div></div>
+    </div>
+
+    <!-- MY PROFILE -->
+    <div class="section" id="section-myprofile">
+      <div id="myProfileContent"></div>
+      <div class="card" id="selfEditCard" style="display:none">
+        <div class="card-title">✏️ Edit Profile</div>
+        <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="editName"></div>
+        <div id="editHostelFields"><div class="form-group"><label class="form-label">Room</label><input type="text" class="form-input" id="editRoom"></div></div>
+        <div id="editTiffinFields" style="display:none">
+          <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea" id="editAddress" style="min-height:60px"></textarea></div>
+          <div class="form-group"><label class="form-label">Delivery Note</label><input type="text" class="form-input" id="editDeliveryNote"></div>
+        </div>
+        <button class="btn btn-rose" onclick="saveSelfEdit()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- MY PAYMENT -->
+    <div class="section" id="section-mypayment">
+      <div class="card"><div class="card-title">💰 My Bill This Month</div><div id="myBillDetail"></div></div>
+      <div class="card"><div class="card-title">💎 Carry Forward</div><div id="myCarryForwardDetail"></div></div>
+      <div class="card">
+        <div class="card-title">💳 Pay via UPI</div>
+        <div class="qr-card">
+          <div id="qrDisplay"></div>
+          <div style="font-family:Nunito;font-size:14px;font-weight:800;color:var(--purple);margin-bottom:6px" id="qrUpiId"></div>
+          <div style="font-size:12px;color:var(--gray)">Scan QR or pay on UPI ID above</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📷 Send Payment Proof</div>
+        <div class="form-group"><label class="form-label">Amount Paid (₹)</label><input type="number" class="form-input" id="ssAmount"></div>
+        <div class="upload-zone" onclick="document.getElementById('ssUpload').click()">
+          <div style="font-size:36px;margin-bottom:8px">📷</div>
+          <div style="font-size:13px;color:var(--gray)" id="ssUploadText">Tap to select screenshot</div>
+          <img id="ssPreview" class="uploaded-preview" style="display:none">
+        </div>
+        <input type="file" id="ssUpload" accept="image/*" style="display:none" onchange="previewSS(this)">
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-rose" onclick="submitSS()" style="flex:1">📤 Send to Admin</button>
+          <button class="wa-btn" onclick="whatsappAdmin()">💬 WA</button>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">💰 Payment History</div><div id="myPayHistory"></div></div>
+    </div>
+
+    <!-- CHAT (Member) -->
+    <div class="section" id="section-chat">
+      <div class="card">
+        <div class="card-title">💬 Chat with Admin</div>
+        <div class="chat-container">
+          <div class="chat-messages" id="memberChatMessages"></div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="memberChatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMemberMsg()">
+            <button class="chat-send" onclick="sendMemberMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN CHATS -->
+    <div class="section" id="section-adminchat">
+      <div class="card"><div class="card-title">💬 Member Chats</div><div id="adminChatMemberList"></div></div>
+      <div class="card" id="adminChatBox" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0" id="adminChatTitle">💬 Chat</div>
+          <button class="btn btn-gray btn-sm" onclick="closeAdminChatBox()">✕</button>
+        </div>
+        <div class="chat-container">
+          <div class="chat-messages" id="adminChatMessages"></div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="adminChatInput" placeholder="Reply..." onkeydown="if(event.key==='Enter')sendAdminMsg()">
+            <button class="chat-send" onclick="sendAdminMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="reportModal" onclick="closeModal('reportModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('reportModal')">✕</button>
+    <div class="modal-title">📊 Monthly Report</div>
+    <div id="reportContent"></div>
+    <button class="btn btn-teal" onclick="generateMonthlyBill()" style="margin-top:14px">📄 Generate Bills</button>
+  </div>
+</div>
+<div class="modal-overlay" id="billModal" onclick="closeModal('billModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('billModal')">✕</button>
+    <div class="modal-title">📄 Monthly Bills</div>
+    <div id="billContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCRbpbrI3_t8yeGN3MHjoLir3KDXbMiLMs",
+  authDomain: "tara-foodies-7b928.firebaseapp.com",
+  databaseURL: "https://tara-foodies-7b928-default-rtdb.firebaseio.com",
+  projectId: "tara-foodies-7b928",
+  storageBucket: "tara-foodies-7b928.appspot.com",
+  messagingSenderId: "494382891805",
+  appId: "1:494382891805:web:a8d84e5ad5c3b8f6e4d2a1",
+  measurementId: "G-21PM1JNL2Q"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ============================================================
+// HELPERS
+// ============================================================
+function hashPin(p){var h=0;for(var i=0;i<p.length;i++){h=(h*31+p.charCodeAt(i))&0xFFFFFFFF;}return h.toString(16);}
+function today(){return new Date().toISOString().split('T')[0];}
+function thisMonth(){return today().substring(0,7);}
+function fmtDate(d){if(!d)return'';try{return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+function fmtTime(ts){try{return new Date(ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}catch(e){return'';}}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function getPrevMonth(m){const[y,mo]=m.split('-').map(Number);if(mo===1)return(y-1)+'-12';return y+'-'+(mo-1).toString().padStart(2,'0');}
+function getNextMonth(m){const[y,mo]=m.split('-').map(Number);if(mo===12)return(y+1)+'-01';return y+'-'+(mo+1).toString().padStart(2,'0');}
+
+// ============================================================
+// STATE (in-memory, synced from Firebase)
+// ============================================================
+let S = {
+  userType: null, currentUser: null,
+  adminPhone:'8601249826', adminName:'Naman', adminUPI:'namankushwaha679@okicici', adminWA:'8601249826',
+  adminPinHash: hashPin('7888'),
+  members:{}, payments:{}, menus:{}, attendance:{}, expenses:{},
+  notices:{}, leaves:{}, ratings:{}, screenshots:{}, complaints:{},
+  chats:{}, chatUnread:{}, poll:null, messOff:{},
+  settings:{complaint:false,birthday:false},
+  billing:{cap1:1500,cap2:2400,cap3:2800,messCharge:500},
+  carryForward:{}
+};
+
+let currentLang = localStorage.getItem('mm_lang')||'en';
+let pinValue='', pinCallback=null, activeChatMemberId=null, attState={};
+let isOnline = true;
+
+// ============================================================
+// FIREBASE REAL-TIME LISTENERS
+// ============================================================
+function setupListeners(){
+  // Connection state
+  db.ref('.info/connected').on('value', snap=>{
+    isOnline = snap.val()===true;
+    const dot=document.getElementById('syncDot');
+    const txt=document.getElementById('syncText');
+    if(dot){dot.className='sync-dot'+(isOnline?'':' offline');}
+    if(txt){txt.textContent=isOnline?'Live':'Offline';}
+  });
+
+  const refs = ['members','payments','menus','attendance','expenses','notices','leaves','ratings','screenshots','complaints','chats','chatUnread','messOff','carryForward'];
+  refs.forEach(key=>{
+    db.ref(key).on('value', snap=>{
+      S[key] = snap.val()||{};
+      onDataUpdate(key);
+    });
+  });
+
+  db.ref('config').on('value', snap=>{
+    const cfg = snap.val()||{};
+    if(cfg.adminName) S.adminName=cfg.adminName;
+    if(cfg.adminPhone) S.adminPhone=cfg.adminPhone;
+    if(cfg.adminUPI) S.adminUPI=cfg.adminUPI;
+    if(cfg.adminWA) S.adminWA=cfg.adminWA;
+    if(cfg.adminPinHash) S.adminPinHash=cfg.adminPinHash;
+    if(cfg.settings) S.settings=cfg.settings;
+    if(cfg.billing) S.billing=cfg.billing;
+    if(cfg.poll!==undefined) S.poll=cfg.poll;
+  });
+}
+
+function onDataUpdate(key){
+  if(!S.userType) return;
+  // Re-render relevant sections
+  const activeSection = document.querySelector('.section.active');
+  const activeName = activeSection ? activeSection.id.replace('section-','') : 'home';
+  renderHome();
+  if(activeName==='members') renderMembers();
+  if(activeName==='payments') renderPayments();
+  if(activeName==='attendance') renderAttendance();
+  if(activeName==='expenses') renderExpenses();
+  if(activeName==='notices') renderNotices();
+  if(activeName==='menu') renderMenuHistory();
+  if(activeName==='myattendance') renderMyAttendance();
+  if(activeName==='mypayment') renderMyPayment();
+  if(activeName==='myprofile') renderMyProfile();
+  if(activeName==='adminchat') renderAdminChatList();
+  if(activeName==='chat' && S.currentUser) renderMemberChat();
+  updateChatBadges();
+}
+
+// Write helpers
+function fbSet(path, val){ return db.ref(path).set(val); }
+function fbUpdate(path, val){ return db.ref(path).update(val); }
+function fbPush(path, val){ return db.ref(path).push(val); }
+function fbRemove(path){ return db.ref(path).remove(); }
+
+// ============================================================
+// PIN
+// ============================================================
+function showPin(cb,title,sub){
+  pinValue='';pinCallback=cb;
+  document.getElementById('pinTitle').textContent=title||'Admin PIN';
+  document.getElementById('pinSub').textContent=sub||'Enter 4-digit PIN';
+  updatePinDots();
+  document.getElementById('pinError').textContent='';
+  document.getElementById('pinOverlay').style.display='flex';
+}
+function cancelPin(){document.getElementById('pinOverlay').style.display='none';pinValue='';pinCallback=null;}
+function pinPress(d){
+  if(pinValue.length>=4)return;
+  pinValue+=d;updatePinDots();
+  if(pinValue.length===4){
+    setTimeout(()=>{
+      if(hashPin(pinValue)===S.adminPinHash){
+        document.getElementById('pinOverlay').style.display='none';
+        if(pinCallback)pinCallback();
+        pinValue='';pinCallback=null;
+      }else{
+        document.getElementById('pinError').textContent='❌ Wrong PIN';
+        pinValue='';updatePinDots();
+      }
+    },200);
+  }
+}
+function pinDel(){if(pinValue.length>0){pinValue=pinValue.slice(0,-1);updatePinDots();}}
+function updatePinDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).className='pin-dot'+(i<pinValue.length?' filled':'');}
+
+function changePin(){
+  const cur=document.getElementById('currentPin').value;
+  const nw=document.getElementById('newPin').value;
+  const cf=document.getElementById('confirmPin').value;
+  if(hashPin(cur)!==S.adminPinHash){showToast('❌ Current PIN galat');return;}
+  if(!/^\d{4}$/.test(nw)){showToast('❌ 4 digit PIN chahiye');return;}
+  if(nw!==cf){showToast('❌ PINs match nahi');return;}
+  S.adminPinHash=hashPin(nw);
+  fbUpdate('config',{adminPinHash:S.adminPinHash});
+  document.getElementById('currentPin').value='';
+  document.getElementById('newPin').value='';
+  document.getElementById('confirmPin').value='';
+  showToast('✅ PIN changed!');
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+let selectedLoginType=null;
+
+function selectLoginType(type){
+  selectedLoginType=type;
+  document.getElementById('typeHostel').classList.toggle('selected',type==='hostel');
+  document.getElementById('typeTiffin').classList.toggle('selected',type==='tiffin');
+  renderLoginForm(type);
+}
+
+function renderLoginForm(type){
+  const area=document.getElementById('loginFormArea');
+  const allMembers=Object.values(S.members).filter(m=>(m.memberType||'hostel')===type);
+  area.innerHTML=`
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Phone Number</label>
+      <input type="tel" class="form-input" id="memberPhone" placeholder="10-digit" maxlength="10" onkeydown="if(event.key==='Enter')doMemberLogin()">
+    </div>
+    <button class="btn btn-purple" onclick="doMemberLogin()" style="margin-bottom:12px">${type==='hostel'?'🏠':'🛵'} Login</button>
+    <div style="background:#FFF1F3;border-radius:10px;padding:10px;font-size:12px;color:var(--gray);margin-bottom:12px;text-align:center">
+      <b style="color:var(--rose)">👑 Admin?</b> Admin phone + PIN se login karo
+    </div>
+    ${allMembers.length?`
+    <div class="divider">ya naam chunno</div>
+    <div class="member-select-list">
+      ${allMembers.map(m=>`<button class="member-select-btn" onclick="fillPhone('${m.phone}')">
+        <div class="mini-avatar">${(m.name||'?')[0].toUpperCase()}</div>
+        <div><div style="font-weight:700">${m.name}</div><div style="font-size:11px;color:var(--gray)">${m.phone||''}</div></div>
+      </button>`).join('')}
+    </div>`:'<div style="color:var(--gray);font-size:13px;text-align:center;padding:14px">No members yet</div>'}`;
+}
+
+function fillPhone(phone){
+  const el=document.getElementById('memberPhone');
+  if(el&&phone){el.value=phone;el.focus();}
+  showToast('📱 Phone filled — tap Login');
+}
+
+function doMemberLogin(){
+  const phone=(document.getElementById('memberPhone')?.value||'').trim();
+  if(!phone||phone.length<10){showToast('❌ 10 digit number daalo');return;}
+  if(phone===S.adminPhone){
+    showPin(()=>loginAs('admin',null),'Admin PIN 🔐','Phone matched. Enter PIN.');
+    return;
+  }
+  const member=Object.values(S.members).find(m=>m.phone===phone);
+  if(!member){showToast('❌ Is number se koi member nahi mila');return;}
+  loginAs('member',member.id);
+}
+
+function loginAs(type,memberId){
+  S.userType=type;
+  S.currentUser=memberId?Object.values(S.members).find(m=>m.id===memberId):null;
+  if(type==='member'&&!S.currentUser){showToast('❌ Member not found');return;}
+  document.body.classList.remove('admin-mode','member-mode');
+  document.body.classList.add(type+'-mode');
+  const uname=type==='admin'?'👑 '+S.adminName:(S.currentUser.memberType==='tiffin'?'🛵':'🏠')+' '+S.currentUser.name;
+  document.getElementById('topbarUser').textContent=uname;
+  document.getElementById('loginScreen').classList.remove('show');
+  document.getElementById('app').classList.add('show');
+  setDates();
+  renderAll();
+  showSection('home');
+  if(type==='admin')loadSettings();
+  updateChatBadges();
+}
+
+function logout(){
+  S.userType=null;S.currentUser=null;activeChatMemberId=null;
+  document.getElementById('loginScreen').classList.add('show');
+  document.getElementById('app').classList.remove('show');
+  document.body.classList.remove('admin-mode','member-mode');
+  selectedLoginType=null;
+  document.getElementById('loginFormArea').innerHTML='';
+  document.getElementById('typeHostel').classList.remove('selected');
+  document.getElementById('typeTiffin').classList.remove('selected');
+}
+
+function toggleLang(){
+  currentLang=currentLang==='en'?'hi':'en';
+  localStorage.setItem('mm_lang',currentLang);
+  document.getElementById('langLabel').textContent=currentLang==='en'?'हिं':'EN';
+  renderAll();
+}
+
+// ============================================================
+// BILLING
+// ============================================================
+function getMemberCap(m){return S.billing['cap'+(m.mealPlan||2)]||2400;}
+function getRatePerDay(m){return Math.round(getMemberCap(m)/30);}
+
+function getMonthDaysPresent(memberId,month){
+  return Object.entries(S.attendance).filter(([d,obj])=>{
+    if(!d.startsWith(month))return false;
+    if(S.messOff&&S.messOff[d])return false;
+    return obj&&obj[memberId]==='present';
+  }).length;
+}
+
+function isOnLeave(memberId,date){
+  return Object.values(S.leaves).some(l=>{
+    if(l.memberId!==memberId||!l.from)return false;
+    return date>=l.from&&date<=(l.to||l.from);
+  });
+}
+
+function getCarryForward(memberId,month){
+  if(!S.carryForward||!S.carryForward[memberId])return 0;
+  return S.carryForward[memberId][month.replace('-','_')]||0;
+}
+
+function calcBill(member,month){
+  if(!member)return{paid:0,due:0,bill:0,isTiffin:false};
+  if(member.memberType==='tiffin'){
+    const paid=Object.values(S.payments).filter(p=>p.memberId===member.id&&p.date&&p.date.startsWith(month)).reduce((s,p)=>s+p.amount,0);
+    return{paid,due:0,bill:null,isTiffin:true,carryForward:0};
+  }
+  const cap=getMemberCap(member);
+  const ratePerDay=getRatePerDay(member);
+  const mc=S.billing.messCharge||500;
+  const daysPresent=getMonthDaysPresent(member.id,month);
+  const applyMessCharge=daysPresent>10;
+  let actualBill=Math.min((daysPresent*ratePerDay)+(applyMessCharge?mc:0),cap);
+  const prevMo=getPrevMonth(month);
+  const prevCF=getCarryForward(member.id,prevMo);
+  const paid=Object.values(S.payments).filter(p=>p.memberId===member.id&&p.date&&p.date.startsWith(month)).reduce((s,p)=>s+p.amount,0);
+  const totalAdvance=paid+prevCF;
+  const remaining=Math.max(0,totalAdvance-actualBill);
+  const due=Math.max(0,actualBill-totalAdvance);
+  return{bill:actualBill,paid,due,daysPresent,applyMessCharge,messCharge:mc,ratePerDay,cap,carryForward:prevCF,totalAdvance,remaining};
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function loadSettings(){
+  document.getElementById('toggleComplaint').checked=S.settings.complaint;
+  document.getElementById('toggleBirthday').checked=S.settings.birthday;
+  document.getElementById('settingAdminName').value=S.adminName;
+  document.getElementById('settingAdminPhone').value=S.adminPhone;
+  document.getElementById('settingAdminUPI').value=S.adminUPI||'';
+  document.getElementById('settingAdminWA').value=S.adminWA||'';
+  document.getElementById('cap1').value=S.billing.cap1;
+  document.getElementById('cap2').value=S.billing.cap2;
+  document.getElementById('cap3').value=S.billing.cap3;
+  document.getElementById('messChargeInput').value=S.billing.messCharge;
+}
+function saveSettings(){
+  S.settings.complaint=document.getElementById('toggleComplaint').checked;
+  S.settings.birthday=document.getElementById('toggleBirthday').checked;
+  fbUpdate('config',{settings:S.settings});
+  renderHome();showToast('✅ Settings saved!');
+}
+function saveAdminProfile(){
+  S.adminName=document.getElementById('settingAdminName').value.trim()||'Naman';
+  S.adminPhone=document.getElementById('settingAdminPhone').value.trim();
+  S.adminUPI=document.getElementById('settingAdminUPI').value.trim();
+  S.adminWA=document.getElementById('settingAdminWA').value.trim();
+  fbUpdate('config',{adminName:S.adminName,adminPhone:S.adminPhone,adminUPI:S.adminUPI,adminWA:S.adminWA});
+  document.getElementById('topbarUser').textContent='👑 '+S.adminName;
+  showToast('✅ Profile saved!');
+}
+function saveBillingRates(){
+  S.billing={
+    cap1:parseInt(document.getElementById('cap1').value)||1500,
+    cap2:parseInt(document.getElementById('cap2').value)||2400,
+    cap3:parseInt(document.getElementById('cap3').value)||2800,
+    messCharge:parseInt(document.getElementById('messChargeInput').value)||500
+  };
+  fbUpdate('config',{billing:S.billing});
+  showToast('✅ Rates saved!');
+}
+
+// ============================================================
+// NAV
+// ============================================================
+function showSection(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('section-'+name)?.classList.add('active');
+  document.getElementById('tab-'+name)?.classList.add('active');
+  if(name==='home')renderHome();
+  if(name==='menu'){renderMenuHistory();renderRatingGraph();updateMessToggle();}
+  if(name==='attendance')renderAttendance();
+  if(name==='members')renderMembers();
+  if(name==='payments')renderPayments();
+  if(name==='expenses')renderExpenses();
+  if(name==='notices')renderNotices();
+  if(name==='myattendance')renderMyAttendance();
+  if(name==='mypayment')renderMyPayment();
+  if(name==='myprofile')renderMyProfile();
+  if(name==='chat'){renderMemberChat();markMemberChatRead();}
+  if(name==='adminchat')renderAdminChatList();
+  if(name==='settings')loadSettings();
+}
+
+function setDates(){
+  const t2=today();
+  ['menuDate','attDate','payDate','expDate','leaveFrom','leaveTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t2;});
+  const el=document.getElementById('todayDate');
+  if(el)el.textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+function renderAll(){
+  renderHome();renderMenuHistory();renderRatingGraph();renderMembers();
+  renderPayments();renderExpenses();renderNotices();updateChatBadges();
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome(){
+  if(!S.userType)return;
+  const t2=today();
+  const menus=S.menus||{};
+  const m=Object.values(menus).find(x=>x.date===t2);
+  const off=S.messOff&&S.messOff[t2];
+  const el=document.getElementById('todayMenuText');
+  if(el){
+    if(off){el.textContent='Mess is OFF today 🚫';el.className='menu-text menu-empty';}
+    else if(m){el.textContent=m.text;el.className='menu-text';}
+    else{el.textContent='Menu not set yet';el.className='menu-text menu-empty';}
+  }
+  const ratingDiv=document.getElementById('todayRating');
+  if(S.userType==='member'&&m&&!off){ratingDiv.style.display='block';renderStars(t2);}
+  else if(ratingDiv) ratingDiv.style.display='none';
+  renderMessStatusBanner();
+
+  if(S.userType==='admin'){
+    const members=Object.values(S.members||{});
+    document.getElementById('statMembers').textContent=members.length;
+    const mo=thisMonth();
+    const monthPaid=Object.values(S.payments||{}).filter(p=>p.date&&p.date.startsWith(mo)).reduce((s,p)=>s+p.amount,0);
+    document.getElementById('statPaid').textContent='₹'+monthPaid.toLocaleString('en-IN');
+    const att=S.attendance&&S.attendance[t2]?S.attendance[t2]:{};
+    document.getElementById('statPresent').textContent=Object.values(att).filter(v=>v==='present').length;
+    const unpaid=members.filter(m=>(!m.memberType||m.memberType==='hostel')&&calcBill(m,mo).due>0).length;
+    document.getElementById('statUnpaid').textContent=unpaid;
+    renderHeadcount();renderPendingVerif();renderAdminLeaveView();renderAdminBirthdays();renderPerDayCost();
+  }
+
+  if(S.userType==='member'&&S.currentUser){
+    const mo=thisMonth();
+    const b=calcBill(S.currentUser,mo);
+    const cfEl=document.getElementById('memberCarryForwardHome');
+    if(cfEl){
+      const prevMo=getPrevMonth(mo);
+      const cf=getCarryForward(S.currentUser.id,prevMo);
+      cfEl.innerHTML=cf>0?`<div class="carry-forward-card"><div class="carry-forward-amt">₹${cf.toLocaleString('en-IN')}</div><div style="font-size:12px;color:#065F46;margin-top:3px">Carry forward from ${prevMo}</div></div>`:'<div style="color:var(--gray);font-size:13px;padding:10px;text-align:center">No carry forward from last month</div>';
+    }
+    if(S.currentUser.memberType==='tiffin'){
+      document.getElementById('memberStatCards').innerHTML=`<div class="stat-card teal"><div class="stat-num">₹${b.paid.toLocaleString('en-IN')}</div><div class="stat-label">Paid This Month</div></div><div class="stat-card amber"><div class="stat-num">${S.currentUser.tifinPaused?'⏸':'✅'}</div><div class="stat-label">${S.currentUser.tifinPaused?'Paused':'Active'}</div></div>`;
+    }else{
+      document.getElementById('memberStatCards').innerHTML=`<div class="stat-card teal"><div class="stat-num">₹${b.totalAdvance.toLocaleString('en-IN')}</div><div class="stat-label">Total Advance</div></div><div class="stat-card rose"><div class="stat-num">₹${b.due.toLocaleString('en-IN')}</div><div class="stat-label">Due</div></div><div class="stat-card purple"><div class="stat-num">${b.daysPresent}</div><div class="stat-label">Days Present</div></div><div class="stat-card amber"><div class="stat-num">₹${(b.bill||0).toLocaleString('en-IN')}</div><div class="stat-label">Bill</div></div>`;
+    }
+    const billCard=document.getElementById('memberBillingCard');
+    const billContent=document.getElementById('memberBillingContent');
+    if(S.currentUser.memberType!=='tiffin'&&b.bill!==null){
+      billCard.style.display='block';
+      billContent.innerHTML=`<div class="billing-card"><div style="font-size:13px;font-weight:600">${b.daysPresent} days × ₹${b.ratePerDay}${b.applyMessCharge?' + ₹'+b.messCharge+' (10+ days)':''}</div><div class="billing-amount">₹${(b.bill||0).toLocaleString('en-IN')}</div><div style="font-size:11px;color:var(--gray);margin-top:4px">Cap: ₹${b.cap} · Advance: ₹${b.totalAdvance} · <span style="color:${b.due>0?'var(--red)':'var(--teal)'}">Due: ₹${b.due}</span></div>${b.remaining>0?`<div style="margin-top:6px;color:var(--teal);font-size:12px;font-weight:700">💚 ₹${b.remaining} carry forward next month</div>`:''}</div>`;
+    }else{billCard.style.display='none';}
+
+    const todayAtt=S.attendance&&S.attendance[t2]?S.attendance[t2]:{};
+    const myStatus=todayAtt[S.currentUser.id];
+    const attEl=document.getElementById('myTodayAttStatus');
+    if(off){attEl.innerHTML=`<div style="color:var(--red);font-weight:700">🚫 Mess is OFF today</div>`;}
+    else if(!myStatus){attEl.innerHTML=`<div style="color:var(--gray);font-size:13px;margin-bottom:8px">Not marked yet</div><button class="btn btn-teal" onclick="markMyAttendance('present')" style="margin-bottom:6px">✅ I'm Present</button><button class="btn btn-rose" onclick="markMyAttendance('absent')">❌ Mark Absent</button>`;}
+    else{attEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><span style="font-size:32px">${myStatus==='present'?'✅':'❌'}</span><div><div style="font-weight:700">${myStatus==='present'?'Present Today':'Absent Today'}</div><button onclick="markMyAttendance(null)" style="background:none;border:none;color:var(--rose);font-size:12px;cursor:pointer;font-weight:700;padding:0;margin-top:4px">Change</button></div></div>`;}
+
+    const notices=Object.values(S.notices||{}).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const noticeEl=document.getElementById('latestNotice');
+    if(notices.length){const n=notices[0];noticeEl.innerHTML=`<div class="notice-item"><div class="notice-title">📌 ${escHtml(n.title)}</div><div class="notice-meta">${fmtDate(n.date)}</div><div style="font-size:13px;margin-top:6px">${escHtml(n.body)}</div></div>`;}
+    else noticeEl.innerHTML=`<div style="color:var(--gray);font-size:13px">No notices yet</div>`;
+
+    const cCard=document.getElementById('memberComplaintCard');
+    if(cCard)cCard.style.display=S.settings.complaint?'block':'none';
+    renderMemberBirthdays();renderMemberPoll();
+  }
+}
+
+// ============================================================
+// MESS STATUS
+// ============================================================
+function isMessOff(date){return S.messOff&&S.messOff[date]===true;}
+function renderMessStatusBanner(){
+  const t2=today();const off=isMessOff(t2);const el=document.getElementById('messStatusBanner');
+  if(!el)return;
+  el.innerHTML=off?`<div class="mess-off-banner"><div class="mess-off-text">🚫 Mess is OFF Today</div><div style="font-size:12px;color:var(--gray);margin-top:4px">No meals served</div></div>`:`<div class="mess-on-banner"><div class="mess-on-text">✅ Mess is ON Today</div></div>`;
+}
+function toggleMessStatus(){
+  const date=document.getElementById('menuDate').value||today();
+  const isOff=!document.getElementById('messOnToggle').checked;
+  if(isOff){fbUpdate('messOff',{[date]:true});}
+  else{fbRemove('messOff/'+date);}
+  document.getElementById('messStatusText').textContent=isOff?'Mess is OFF 🚫':'Mess is ON ✅';
+  showToast(isOff?'🚫 Mess OFF for '+fmtDate(date):'✅ Mess ON for '+fmtDate(date));
+}
+function updateMessToggle(){
+  const date=document.getElementById('menuDate')?.value||today();
+  const off=isMessOff(date);
+  const toggle=document.getElementById('messOnToggle');
+  if(toggle)toggle.checked=!off;
+  const statusEl=document.getElementById('messStatusText');
+  if(statusEl)statusEl.textContent=off?'Mess is OFF 🚫':'Mess is ON ✅';
+  const attWarn=document.getElementById('messOffAttWarning');
+  if(attWarn)attWarn.style.display=isMessOff(document.getElementById('attDate')?.value||today())?'block':'none';
+}
+
+// ============================================================
+// HEADCOUNT
+// ============================================================
+function renderHeadcount(){
+  const t2=today();
+  const att=S.attendance&&S.attendance[t2]?S.attendance[t2]:{};
+  const p=Object.values(att).filter(v=>v==='present').length;
+  const h=Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel').length;
+  const el=document.getElementById('headcountDisplay');
+  el.innerHTML=`<div style="font-family:Nunito;font-size:56px;font-weight:900;color:var(--teal);text-align:center;line-height:1">${p}</div>
+    <div style="text-align:center;font-size:13px;color:var(--gray);font-weight:600;margin-top:4px">girls eating today 🍽️</div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:#D1FAE5;border-radius:10px;padding:10px;text-align:center"><div style="font-family:Nunito;font-size:18px;font-weight:900;color:var(--teal)">${p}</div><div style="font-size:11px;color:#065F46;font-weight:700">Present</div></div>
+      <div style="background:#FEE2E2;border-radius:10px;padding:10px;text-align:center"><div style="font-family:Nunito;font-size:18px;font-weight:900;color:var(--red)">${h-p}</div><div style="font-size:11px;color:#991B1B;font-weight:700">Absent/Unknown</div></div>
+    </div>`;
+}
+
+// ============================================================
+// PENDING VERIFICATIONS
+// ============================================================
+function renderPendingVerif(){
+  const pending=Object.values(S.screenshots||{}).filter(s=>s.status==='pending');
+  const badge=pending.length?pending.length.toString():'';
+  ['pendingBadge','pendingBadge2'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=badge;el.style.display=pending.length?'inline':'none';}});
+  const html=pending.length?pending.map(s=>{
+    const m=Object.values(S.members||{}).find(x=>x.id===s.memberId);
+    return `<div class="pending-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div style="font-weight:700">👩 ${m?m.name:'Unknown'}</div><div style="font-size:11px;color:var(--gray)">${fmtDate(s.date)} · ₹${parseInt(s.amount).toLocaleString('en-IN')}</div></div>
+        <div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--teal)">₹${parseInt(s.amount).toLocaleString('en-IN')}</div>
+      </div>
+      ${s.screenshot&&s.screenshot.startsWith('data:')?`<img src="${s.screenshot}" class="pending-ss" onclick="window.open(this.src,'_blank')" onerror="this.style.display='none'">`:''}
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-teal btn-sm" style="flex:1" onclick="verifyPayment('${s.id}',true)">✅ Approve</button>
+        <button class="btn btn-danger btn-sm" style="flex:1" onclick="verifyPayment('${s.id}',false)">❌ Reject</button>
+      </div>
+    </div>`;
+  }).join(''):`<div class="empty-state"><div class="empty-icon">✅</div><p class="empty-text">No pending verifications</p></div>`;
+  ['pendingVerifList','pendingVerifList2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
+}
+
+function verifyPayment(ssId,approve){
+  const ss=S.screenshots[ssId]||(Object.values(S.screenshots||{}).find(s=>s.id===ssId));
+  if(!ss)return;
+  // Find key
+  const key=Object.keys(S.screenshots||{}).find(k=>S.screenshots[k].id===ssId)||ssId;
+  if(approve){
+    const payId=Date.now().toString();
+    fbSet('payments/'+payId,{id:payId,memberId:ss.memberId,amount:ss.amount,date:ss.date,note:'Via screenshot',screenshot:null});
+    fbUpdate('screenshots/'+key,{status:'approved',screenshot:null});
+    showToast('✅ Payment approved!');
+  }else{
+    fbUpdate('screenshots/'+key,{status:'rejected'});
+    showToast('❌ Rejected');
+  }
+}
+
+// ============================================================
+// LEAVE VIEW
+// ============================================================
+function renderAdminLeaveView(){
+  const el=document.getElementById('adminLeaveView');if(!el)return;
+  const leaves=Object.values(S.leaves||{}).sort((a,b)=>(b.applied||'').localeCompare(a.applied||'')).slice(0,10);
+  if(!leaves.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🏠</div><p class="empty-text">No leave notes</p></div>`;return;}
+  el.innerHTML=leaves.map(l=>{
+    const m=Object.values(S.members||{}).find(x=>x.id===l.memberId);
+    return `<div class="leave-item"><div style="display:flex;justify-content:space-between"><div style="font-weight:700">👩 ${m?m.name:'Unknown'}</div><div style="font-size:11px;color:var(--gray)">${fmtDate(l.applied)}</div></div><div style="font-size:12px;color:var(--gray);margin-top:3px">📅 ${fmtDate(l.from)}${l.to&&l.to!==l.from?' → '+fmtDate(l.to):''}</div>${l.reason?`<div style="font-size:12px;color:var(--gray)">"${escHtml(l.reason)}"</div>`:''}</div>`;
+  }).join('');
+}
+
+// ============================================================
+// BIRTHDAYS
+// ============================================================
+function getUpcomingBirthdays(){
+  const ts=today();const[ty,tm,td]=[...ts.split('-').map(Number)];
+  return Object.values(S.members||{}).filter(m=>m.birthday).map(m=>{
+    const[,bm,bd]=[...m.birthday.split('-').map(Number)];
+    let next=new Date(ty,bm-1,bd);
+    if(next<new Date(ty,tm-1,td))next=new Date(ty+1,bm-1,bd);
+    const diff=Math.ceil((next-new Date(ty,tm-1,td))/(864e5));
+    return{...m,diff,bm,bd};
+  }).sort((a,b)=>a.diff-b.diff).slice(0,5);
+}
+function renderAdminBirthdays(){
+  const card=document.getElementById('adminBdayCard');if(!card)return;
+  if(!S.settings.birthday){card.style.display='none';return;}
+  card.style.display='block';
+  const bdays=getUpcomingBirthdays();
+  const el=document.getElementById('adminBdayList');
+  el.innerHTML=bdays.length?bdays.map(m=>`<div class="bday-item"><div style="font-size:28px">${m.diff===0?'🎉':'🎂'}</div><div><div style="font-weight:700;font-size:14px">${m.name}</div><div style="font-size:12px;color:var(--gray)">${m.bm}/${m.bd}</div><div style="font-size:11px;font-weight:700;color:var(--rose)">${m.diff===0?'🎊 Today!':m.diff===1?'Tomorrow!':m.diff+' days'}</div></div></div>`).join(''):`<div class="empty-state"><div class="empty-icon">🎂</div><p class="empty-text">No birthdays added</p></div>`;
+}
+function renderMemberBirthdays(){
+  const card=document.getElementById('memberBdayCard');if(!card)return;
+  if(!S.settings.birthday){card.style.display='none';return;}
+  card.style.display='block';
+  const bdays=getUpcomingBirthdays();
+  const el=document.getElementById('memberBdayList');
+  el.innerHTML=bdays.length?bdays.map(m=>`<div class="bday-item"><div style="font-size:28px">${m.diff===0?'🎉':'🎂'}</div><div><div style="font-weight:700;font-size:14px">${m.name}</div><div style="font-size:11px;font-weight:700;color:var(--rose)">${m.diff===0?'🎊 Today is her Birthday!':m.diff+' days to Birthday'}</div></div></div>`).join(''):`<div class="empty-state"><div class="empty-icon">🎂</div><p class="empty-text">No birthdays</p></div>`;
+}
+
+// ============================================================
+// POLL
+// ============================================================
+function createPoll(){
+  const q=document.getElementById('pollQuestion').value.trim();
+  const o1=document.getElementById('pollOpt1').value.trim();
+  const o2=document.getElementById('pollOpt2').value.trim();
+  const o3=document.getElementById('pollOpt3').value.trim();
+  if(!q||!o1||!o2){showToast('❌ Question + 2 options required');return;}
+  const poll={id:Date.now().toString(),question:q,options:[o1,o2,o3].filter(Boolean).map(text=>({text,votes:{}})),created:today()};
+  fbUpdate('config',{poll});
+  ['pollQuestion','pollOpt1','pollOpt2','pollOpt3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  showToast('📊 Poll created!');
+}
+function deletePoll(){fbUpdate('config',{poll:null});showToast('🗑 Poll deleted');}
+function voteOnPoll(optIdx){
+  if(!S.currentUser||!S.poll)return;
+  const id=S.currentUser.id;
+  if(S.poll.options.some(o=>o.votes&&o.votes[id])){showToast('❌ Already voted!');return;}
+  const poll={...S.poll};
+  if(!poll.options[optIdx].votes)poll.options[optIdx].votes={};
+  poll.options[optIdx].votes[id]=true;
+  fbUpdate('config',{poll});
+  showToast('✅ Vote recorded!');
+}
+function renderMemberPoll(){
+  const card=document.getElementById('memberPollCard');if(!card)return;
+  if(!S.poll){card.style.display='none';return;}
+  card.style.display='block';
+  const el=document.getElementById('memberPollContent');
+  const totalVotes=S.poll.options.reduce((s,o)=>s+Object.keys(o.votes||{}).length,0);
+  const myVote=S.currentUser?S.poll.options.findIndex(o=>o.votes&&o.votes[S.currentUser.id]):-1;
+  el.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:12px">❓ ${escHtml(S.poll.question)}</div>`+
+    S.poll.options.map((o,i)=>{
+      const votes=Object.keys(o.votes||{}).length;
+      const pct=totalVotes?Math.round(votes/totalVotes*100):0;
+      const voted=myVote===i;
+      return `<div class="poll-option ${voted?'voted':''}" onclick="voteOnPoll(${i})"><div class="poll-bar" style="width:${myVote>=0?pct:0}%"></div><div class="poll-option-text">${voted?'✅ ':''}${escHtml(o.text)}</div>${myVote>=0?`<div class="poll-pct">${pct}% · ${votes} votes</div>`:''}</div>`;
+    }).join('')+`<div style="font-size:11px;color:var(--gray);margin-top:8px">${totalVotes} total votes</div>`;
+}
+function renderPollResults(){
+  const card=document.getElementById('pollResultCard');
+  if(!S.poll){if(card)card.style.display='none';return;}
+  if(card)card.style.display='block';
+  const el=document.getElementById('pollResults');
+  const total=S.poll.options.reduce((s,o)=>s+Object.keys(o.votes||{}).length,0);
+  el.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:12px">❓ ${escHtml(S.poll.question)}</div>`+
+    S.poll.options.map(o=>{
+      const votes=Object.keys(o.votes||{}).length;
+      const pct=total?Math.round(votes/total*100):0;
+      return `<div class="poll-option voted" style="margin-bottom:8px"><div class="poll-bar" style="width:${pct}%"></div><div class="poll-option-text">${escHtml(o.text)}</div><div class="poll-pct">${pct}% · ${votes} votes</div></div>`;
+    }).join('')+`<div style="font-size:11px;color:var(--gray);margin-top:8px">${total} total votes</div>`;
+}
+
+// ============================================================
+// COMPLAINTS
+// ============================================================
+function submitComplaint(){
+  const text=document.getElementById('complaintText').value.trim();
+  if(!text){showToast('❌ Kuch likho pehle');return;}
+  fbPush('complaints',{text,date:today(),time:Date.now()});
+  document.getElementById('complaintText').value='';
+  showToast('📤 Submitted anonymously!');
+}
+function renderComplaints(){
+  const card=document.getElementById('adminComplaintCard');if(!card)return;
+  if(!S.settings.complaint){card.style.display='none';return;}
+  card.style.display='block';
+  const complaints=Object.entries(S.complaints||{});
+  const badge=document.getElementById('complaintCount');
+  if(badge)badge.textContent=complaints.length||'';
+  const el=document.getElementById('complaintList');
+  if(!complaints.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📣</div><p class="empty-text">No complaints</p></div>`;return;}
+  el.innerHTML=complaints.sort((a,b)=>(b[1].time||0)-(a[1].time||0)).map(([k,c])=>`<div style="background:var(--light-gray);border-radius:10px;padding:13px;margin-bottom:8px;border-left:4px solid var(--amber)"><div style="font-size:13px">${escHtml(c.text)}</div><div style="font-size:11px;color:var(--gray);margin-top:5px">${fmtDate(c.date)} <button onclick="fbRemove('complaints/${k}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700;margin-left:10px">🗑 Remove</button></div></div>`).join('');
+}
+
+// ============================================================
+// CHAT — REAL-TIME
+// ============================================================
+function updateChatBadges(){
+  if(S.userType==='admin'){
+    const unread=S.chatUnread||{};
+    const total=Object.values(unread).filter(v=>v&&v.forAdmin>0).reduce((s,v)=>s+(v.forAdmin||0),0);
+    const el=document.getElementById('adminChatBadge');
+    if(el){el.textContent=total||'';el.style.display=total>0?'block':'none';}
+  }
+  if(S.userType==='member'&&S.currentUser){
+    const key=S.currentUser.id;
+    const unread=(S.chatUnread&&S.chatUnread[key])?S.chatUnread[key].forMember||0:0;
+    const el=document.getElementById('memberChatBadge');
+    if(el){el.textContent=unread||'';el.style.display=unread>0?'block':'none';}
+  }
+}
+function markMemberChatRead(){
+  if(!S.currentUser)return;
+  fbUpdate('chatUnread/'+S.currentUser.id,{forMember:0});
+}
+function markAdminChatRead(memberId){
+  fbUpdate('chatUnread/'+memberId,{forAdmin:0});
+}
+function sendMemberMsg(){
+  if(!S.currentUser)return;
+  const input=document.getElementById('memberChatInput');
+  const msg=input.value.trim();if(!msg)return;
+  const key=S.currentUser.id;
+  fbPush('chats/'+key,{from:'member',msg,time:Date.now()});
+  // Increment admin unread
+  const cur=(S.chatUnread&&S.chatUnread[key]&&S.chatUnread[key].forAdmin)||0;
+  fbUpdate('chatUnread/'+key,{forAdmin:cur+1});
+  input.value='';
+}
+function sendAdminMsg(){
+  if(!activeChatMemberId)return;
+  const input=document.getElementById('adminChatInput');
+  const msg=input.value.trim();if(!msg)return;
+  fbPush('chats/'+activeChatMemberId,{from:'admin',msg,time:Date.now()});
+  const cur=(S.chatUnread&&S.chatUnread[activeChatMemberId]&&S.chatUnread[activeChatMemberId].forMember)||0;
+  fbUpdate('chatUnread/'+activeChatMemberId,{forMember:cur+1});
+  input.value='';
+}
+function renderMemberChat(){
+  if(!S.currentUser)return;
+  const msgs=Object.values(S.chats&&S.chats[S.currentUser.id]?S.chats[S.currentUser.id]:{}).sort((a,b)=>a.time-b.time);
+  const el=document.getElementById('memberChatMessages');
+  if(!msgs.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">💬</div><p class="empty-text">Admin se kuch pucho!</p></div>`;return;}
+  el.innerHTML=msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.from==='member'?'flex-end':'flex-start'}"><div class="chat-bubble ${m.from==='member'?'me':'other'}">${escHtml(m.msg)}<div class="chat-time">${fmtTime(m.time)}</div></div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function renderAdminChatList(){
+  const el=document.getElementById('adminChatMemberList');
+  const members=Object.values(S.members||{});
+  if(!members.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">💬</div><p class="empty-text">No members yet</p></div>`;return;}
+  el.innerHTML=members.map(m=>{
+    const msgs=Object.values(S.chats&&S.chats[m.id]?S.chats[m.id]:{}).sort((a,b)=>a.time-b.time);
+    const last=msgs.length?msgs[msgs.length-1]:null;
+    const unread=(S.chatUnread&&S.chatUnread[m.id])?S.chatUnread[m.id].forAdmin||0:0;
+    return `<div class="chat-member-item ${activeChatMemberId===m.id?'active-chat':''}" onclick="openAdminChat('${m.id}')">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div class="member-avatar">${(m.name||'?')[0].toUpperCase()}</div>
+        <div style="flex:1"><div class="member-name">${m.name} <span style="font-size:10px;color:var(--gray)">${m.memberType==='tiffin'?'🛵':'🏠'}</span></div>
+        <div style="font-size:11px;color:${last&&last.from==='member'?'var(--rose)':'var(--gray)'}">${last?escHtml(last.msg.substring(0,35))+'...':'No messages'}</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        ${last?`<span style="font-size:10px;color:var(--gray)">${fmtTime(last.time)}</span>`:''}
+        ${unread>0?`<div class="unread-badge">${unread}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function openAdminChat(memberId){
+  activeChatMemberId=memberId;
+  markAdminChatRead(memberId);
+  const m=Object.values(S.members||{}).find(x=>x.id===memberId);
+  document.getElementById('adminChatTitle').textContent='💬 '+(m?m.name:'Member');
+  document.getElementById('adminChatBox').style.display='block';
+  renderAdminChat(memberId);
+  renderAdminChatList();
+}
+function closeAdminChatBox(){activeChatMemberId=null;document.getElementById('adminChatBox').style.display='none';renderAdminChatList();}
+function renderAdminChat(memberId){
+  const msgs=Object.values(S.chats&&S.chats[memberId]?S.chats[memberId]:{}).sort((a,b)=>a.time-b.time);
+  const el=document.getElementById('adminChatMessages');
+  if(!msgs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">💬</div><p class="empty-text">No messages yet</p></div>';return;}
+  el.innerHTML=msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.from==='admin'?'flex-end':'flex-start'}"><div class="chat-bubble ${m.from==='admin'?'me':'other'}">${escHtml(m.msg)}<div class="chat-time">${fmtTime(m.time)}</div></div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+// ============================================================
+// RATINGS
+// ============================================================
+function renderStars(date){
+  const myRating=S.ratings&&S.ratings[date]&&S.currentUser?S.ratings[date][S.currentUser.id]||0:0;
+  const container=document.getElementById('ratingStars');
+  if(!container)return;
+  container.innerHTML=[1,2,3,4,5].map(i=>`<span class="star-btn ${i<=myRating?'active':''}" onclick="rateFood(${i},'${date}')">⭐</span>`).join('');
+}
+function rateFood(stars,date){
+  if(!S.currentUser)return;
+  fbUpdate('ratings/'+date,{[S.currentUser.id]:stars});
+  showToast(`⭐ Rated ${stars}/5`);
+}
+function renderRatingGraph(){
+  const el=document.getElementById('ratingGraph');if(!el)return;
+  const ratings=S.ratings||{};
+  const dates=Object.keys(ratings).sort((a,b)=>b.localeCompare(a)).slice(0,10);
+  if(!dates.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">⭐</div><p class="empty-text">No ratings yet</p></div>`;return;}
+  el.innerHTML=dates.map(d=>{
+    const vals=Object.values(ratings[d]);
+    const avg=vals.reduce((s,v)=>s+v,0)/vals.length;
+    return `<div class="rating-bar-row"><div class="rating-bar-label">${new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div><div class="rating-bar-track"><div class="rating-bar-fill" style="width:${(avg/5)*100}%"></div></div><div class="rating-bar-val">⭐${avg.toFixed(1)}</div></div>`;
+  }).join('');
+}
+
+// ============================================================
+// MENU
+// ============================================================
+function saveMenu(){
+  const date=document.getElementById('menuDate').value;
+  const text=document.getElementById('menuText').value.trim();
+  if(!date||!text){showToast('❌ Date aur menu daalo');return;}
+  const off=!document.getElementById('messOnToggle').checked;
+  if(off){fbUpdate('messOff',{[date]:true});}else{fbRemove('messOff/'+date);}
+  const id=Date.now().toString();
+  // Check if menu for this date exists
+  const existing=Object.entries(S.menus||{}).find(([k,v])=>v.date===date);
+  if(existing){fbUpdate('menus/'+existing[0],{date,text});}
+  else{fbSet('menus/'+id,{id,date,text});}
+  document.getElementById('menuText').value='';
+  showToast('✅ Menu saved!');
+}
+function renderMenuHistory(){
+  const el=document.getElementById('menuHistory');if(!el)return;
+  const sorted=Object.values(S.menus||{}).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(!sorted.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p class="empty-text">No menu yet</p></div>`;return;}
+  el.innerHTML=sorted.map(m=>{
+    const off=isMessOff(m.date);
+    const ratings=S.ratings&&S.ratings[m.date]?Object.values(S.ratings[m.date]):[];
+    const avg=ratings.length?(ratings.reduce((s,r)=>s+r,0)/ratings.length).toFixed(1):null;
+    return `<div class="menu-history-item" style="${off?'background:#FEE2E2;border-left:4px solid var(--red)':''}"><div style="display:flex;justify-content:space-between"><div style="font-size:11px;color:var(--gray);font-weight:600">${fmtDate(m.date)}</div>${off?'<span style="font-size:11px;font-weight:700;color:var(--red)">🚫 OFF</span>':''}</div><div style="font-size:13px;font-weight:700;margin-top:3px">${off?'<span style="color:var(--red);font-style:italic">Mess OFF</span>':escHtml(m.text)}</div>${avg?`<div style="margin-top:5px;font-size:12px">⭐ ${avg}/5 <span style="color:var(--gray)">(${ratings.length})</span></div>`:''}</div>`;
+  }).join('');
+}
+
+// ============================================================
+// ATTENDANCE
+// ============================================================
+function renderAttendance(){
+  const date=document.getElementById('attDate')?.value||today();
+  updateMessToggle();
+  const saved=S.attendance&&S.attendance[date]?S.attendance[date]:{};
+  attState={};
+  const hostelMembers=Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel');
+  hostelMembers.forEach(m=>{attState[m.id]=saved[m.id]||null;});
+  const grid=document.getElementById('attendanceGrid');
+  grid.innerHTML=hostelMembers.length?hostelMembers.map(m=>{
+    const onLeave=isOnLeave(m.id,date);
+    const s=attState[m.id];
+    const cls=s==='present'?'present':s==='absent'?'absent':onLeave?'leave':'';
+    return `<div class="att-member ${cls}" id="att-${m.id}" onclick="cycleAtt('${m.id}')"><div class="att-avatar">${(m.name||'?')[0].toUpperCase()}</div><div class="att-name">${m.name.split(' ')[0]}</div><div class="att-status">${s==='present'?'Present':s==='absent'?'Absent':onLeave?'Leave':'Tap'}</div></div>`;
+  }).join(''):'<p style="color:var(--gray)">Add hostel members first</p>';
+  renderAttStats();
+}
+function cycleAtt(id){
+  const cur=attState[id];
+  attState[id]=cur===null?'present':cur==='present'?'absent':null;
+  const el=document.getElementById('att-'+id);
+  if(!el)return;
+  const date=document.getElementById('attDate')?.value||today();
+  const onLeave=isOnLeave(id,date);
+  el.className='att-member'+(attState[id]==='present'?' present':attState[id]==='absent'?' absent':onLeave?' leave':'');
+  el.querySelector('.att-status').textContent=attState[id]==='present'?'Present':attState[id]==='absent'?'Absent':onLeave?'Leave':'Tap';
+}
+function markAllPresent(){
+  const date=document.getElementById('attDate')?.value||today();
+  Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel').forEach(m=>{if(!isOnLeave(m.id,date))attState[m.id]='present';});
+  renderAttendance();
+}
+function saveAttendance(){
+  const date=document.getElementById('attDate').value;
+  if(!date){showToast('❌ Date select karo');return;}
+  fbSet('attendance/'+date,{...attState});
+  showToast('✅ Attendance saved!');
+}
+function renderAttStats(){
+  const mo=thisMonth();
+  const hostelMembers=Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel');
+  const el=document.getElementById('attendanceStats');
+  el.innerHTML=hostelMembers.length?hostelMembers.map(m=>{
+    const pd=getMonthDaysPresent(m.id,mo);
+    const tracked=Object.keys(S.attendance||{}).filter(d=>d.startsWith(mo)).length;
+    return `<div class="payment-item"><div><div class="payment-name">${m.name}</div><div class="payment-detail"><span class="tag tag-present">${pd} present</span><span class="tag tag-absent">${tracked-pd} other</span></div></div><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--purple)">${pd}</div></div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-icon">📊</div><p class="empty-text">No hostel members</p></div>';
+}
+
+// ============================================================
+// MEMBERS
+// ============================================================
+function toggleMemberTypeFields(){
+  const type=document.getElementById('newMemberType').value;
+  document.getElementById('hostelFields').style.display=type==='hostel'?'block':'none';
+  document.getElementById('tiffinFields').style.display=type==='tiffin'?'block':'none';
+}
+function addMember(){
+  const name=document.getElementById('newMemberName').value.trim();
+  const phone=document.getElementById('newMemberPhone').value.trim();
+  const mealPlan=parseInt(document.getElementById('newMemberMealPlan').value)||2;
+  const memberType=document.getElementById('newMemberType').value||'hostel';
+  const openingAdvance=parseInt(document.getElementById('newMemberAdvance').value)||0;
+  if(!name){showToast('❌ Name required');return;}
+  if(phone&&Object.values(S.members||{}).find(m=>m.phone===phone)){showToast('❌ Phone already registered');return;}
+  const id=Date.now().toString();
+  const member={id,name,phone,mealPlan,memberType,joinDate:today()};
+  if(memberType==='hostel'){member.room=document.getElementById('newMemberRoom').value.trim();member.birthday=document.getElementById('newMemberBday').value||'';}
+  else{member.address=document.getElementById('newMemberAddress').value.trim();member.deliveryNote=document.getElementById('newMemberDeliveryNote').value.trim();member.tifinPaused=false;}
+  fbSet('members/'+id,member);
+  if(openingAdvance>0){const payId=Date.now().toString();fbSet('payments/'+payId,{id:payId,memberId:id,amount:openingAdvance,date:today(),note:'Opening advance'});}
+  ['newMemberName','newMemberPhone','newMemberRoom','newMemberBday','newMemberAddress','newMemberDeliveryNote','newMemberAdvance'].forEach(el=>{const e=document.getElementById(el);if(e)e.value='';});
+  showToast('✅ '+name+' added!');
+}
+function renderMembers(){
+  const mo=thisMonth();
+  const hostel=Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel');
+  const tiffin=Object.values(S.members||{}).filter(m=>m.memberType==='tiffin');
+  const hostelEl=document.getElementById('hostelMembersList');
+  hostelEl.innerHTML=hostel.length?hostel.map(m=>{
+    const b=calcBill(m,mo);
+    const badge=!b.bill?['No bill','badge-partial']:b.due===0?['Paid ✓','badge-paid']:['₹'+b.due+' Due','badge-unpaid'];
+    return `<div class="member-item"><div class="member-info"><div class="member-avatar">${(m.name||'?')[0].toUpperCase()}</div><div><div class="member-name">${m.name}</div><div class="member-sub">${m.phone||'No phone'}${m.room?' · Room '+m.room:''}</div><div class="member-sub">${b.daysPresent} days · Bill ₹${(b.bill||0).toLocaleString('en-IN')} · Adv ₹${b.totalAdvance.toLocaleString('en-IN')}</div>${b.remaining>0?`<div class="member-sub" style="color:var(--teal);font-weight:700">💚 CF: ₹${b.remaining}</div>`:''}<div style="margin-top:4px"><span class="hostel-badge">🏠 ${m.mealPlan||2} Meal/day</span></div></div></div><div class="member-actions"><span class="badge ${badge[1]}">${badge[0]}</span><button class="btn btn-sm" style="background:var(--purple);color:white" onclick="adjustCF('${m.id}')">💚 CF</button><button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">🗑</button></div></div>`;
+  }).join(''):`<div class="empty-state"><div class="empty-icon">🏠</div><p class="empty-text">No hostel members yet</p></div>`;
+  const tiffinEl=document.getElementById('tiffinMembersList');
+  tiffinEl.innerHTML=tiffin.length?tiffin.map(m=>`<div class="member-item"><div class="member-info"><div class="member-avatar" style="background:linear-gradient(135deg,var(--amber),#FCD34D)">${(m.name||'?')[0].toUpperCase()}</div><div><div class="member-name">${m.name}</div><div class="member-sub">${m.phone||'No phone'}</div>${m.address?`<div class="member-sub">📍 ${m.address.substring(0,35)}...</div>`:''}<div style="margin-top:4px"><span class="tiffin-badge">🛵 ${m.mealPlan||2} Meal/day</span> ${m.tifinPaused?'<span class="paused-badge">⏸</span>':'<span class="active-badge">✅</span>'}</div></div></div><div class="member-actions"><button class="btn btn-sm" style="background:${m.tifinPaused?'var(--teal)':'var(--amber)'};color:white" onclick="toggleTiffinPause('${m.id}')">${m.tifinPaused?'▶':'⏸'}</button><button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">🗑</button></div></div>`).join(''):`<div class="empty-state"><div class="empty-icon">🛵</div><p class="empty-text">No tiffin members yet</p></div>`;
+}
+function adjustCF(memberId){
+  const m=Object.values(S.members||{}).find(x=>x.id===memberId);if(!m)return;
+  const mo=thisMonth();const prevMo=getPrevMonth(mo);
+  const current=getCarryForward(memberId,prevMo);
+  const nv=prompt(`${m.name} carry forward (${prevMo}):\nCurrent: ₹${current}\nNew amount:`,current);
+  if(nv===null)return;
+  const num=parseInt(nv);if(isNaN(num)||num<0){showToast('❌ Valid amount');return;}
+  fbUpdate('carryForward/'+memberId,{[prevMo.replace('-','_')]:num});
+  showToast('✅ CF updated: ₹'+num);
+}
+function toggleTiffinPause(id){
+  const m=Object.values(S.members||{}).find(x=>x.id===id);if(!m)return;
+  fbUpdate('members/'+id,{tifinPaused:!m.tifinPaused});
+  showToast(m.tifinPaused?'▶ Resumed':'⏸ Paused');
+}
+function deleteMember(id){
+  if(!confirm('Delete this member?'))return;
+  fbRemove('members/'+id);
+  Object.entries(S.payments||{}).forEach(([k,p])=>{if(p.memberId===id)fbRemove('payments/'+k);});
+  fbRemove('carryForward/'+id);
+  fbRemove('chats/'+id);
+  fbRemove('chatUnread/'+id);
+  showToast('🗑 Member removed');
+}
+
+// ============================================================
+// PAYMENTS
+// ============================================================
+function updatePaySelect(){
+  const el=document.getElementById('payMember');if(!el)return;
+  el.innerHTML='<option value="">-- Select Member --</option>'+Object.values(S.members||{}).map(m=>`<option value="${m.id}">${m.name} (${m.memberType==='tiffin'?'🛵':'🏠'})</option>`).join('');
+}
+function addPayment(){
+  const memberId=document.getElementById('payMember').value;
+  const amount=parseInt(document.getElementById('payAmount').value);
+  const date=document.getElementById('payDate').value;
+  const note=document.getElementById('payNote').value.trim();
+  if(!memberId||!amount||!date){showToast('❌ Member, amount, date required');return;}
+  const id=Date.now().toString();
+  fbSet('payments/'+id,{id,memberId,amount,date,note});
+  document.getElementById('payAmount').value='';document.getElementById('payNote').value='';
+  showToast('✅ Payment recorded!');
+}
+function renderPayments(){
+  updatePaySelect();
+  const mo=thisMonth();
+  const sumEl=document.getElementById('paymentSummary');
+  const members=Object.values(S.members||{});
+  sumEl.innerHTML=members.length?members.map(m=>{
+    if(m.memberType==='tiffin'){
+      const paid=Object.values(S.payments||{}).filter(p=>p.memberId===m.id&&p.date&&p.date.startsWith(mo)).reduce((s,p)=>s+p.amount,0);
+      return `<div class="payment-item"><div><div class="payment-name">🛵 ${m.name}</div><div class="payment-detail">Tiffin</div></div><div class="payment-amount">₹${paid.toLocaleString('en-IN')}</div></div>`;
+    }
+    const b=calcBill(m,mo);
+    const badge=!b.bill?['No bill','badge-partial']:b.due===0?['Paid ✓','badge-paid']:['₹'+b.due+' Due','badge-unpaid'];
+    return `<div class="payment-item"><div><div class="payment-name">🏠 ${m.name}</div><div class="payment-detail">Bill ₹${(b.bill||0).toLocaleString('en-IN')} · ${b.daysPresent} days${b.applyMessCharge?' + mess charge':''}</div><div class="payment-detail" style="color:var(--teal)">Advance ₹${b.totalAdvance.toLocaleString('en-IN')}${b.carryForward>0?' (CF: ₹'+b.carryForward+')':''}</div>${b.remaining>0?`<div class="payment-detail" style="color:var(--teal);font-weight:700">💚 CF next: ₹${b.remaining}</div>`:''}</div><div style="text-align:right"><div class="payment-amount">₹${b.paid.toLocaleString('en-IN')}</div><span class="badge ${badge[1]}">${badge[0]}</span></div></div>`;
+  }).join(''):'<p style="color:var(--gray)">No members yet</p>';
+  const histEl=document.getElementById('paymentHistory');
+  const payments=Object.entries(S.payments||{}).sort((a,b)=>(b[1].date||'').localeCompare(a[1].date||'')).slice(0,30);
+  histEl.innerHTML=payments.length?payments.map(([k,p])=>{
+    const m=Object.values(S.members||{}).find(x=>x.id===p.memberId);
+    return `<div class="payment-item" style="flex-wrap:wrap"><div><div class="payment-name">${m?m.name:'Deleted'}</div><div class="payment-detail">${fmtDate(p.date)}${p.note?' · '+p.note:''}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px"><div class="payment-amount">₹${p.amount.toLocaleString('en-IN')}</div><button onclick="fbRemove('payments/${k}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700">🗑</button></div></div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-icon">💸</div><p class="empty-text">No payments yet</p></div>';
+}
+
+// ============================================================
+// EXPENSES
+// ============================================================
+function addExpense(){
+  const cat=document.getElementById('expCat').value;
+  const desc=document.getElementById('expDesc').value.trim();
+  const amount=parseInt(document.getElementById('expAmount').value);
+  const date=document.getElementById('expDate').value;
+  if(!amount||!date){showToast('❌ Amount aur date required');return;}
+  const id=Date.now().toString();
+  fbSet('expenses/'+id,{id,cat,desc,amount,date});
+  document.getElementById('expDesc').value='';document.getElementById('expAmount').value='';
+  showToast('✅ Expense added!');
+}
+function renderExpenses(){
+  const mo=thisMonth();
+  const monthExp=Object.values(S.expenses||{}).filter(e=>e.date&&e.date.startsWith(mo));
+  const byCategory={};monthExp.forEach(e=>{byCategory[e.cat]=(byCategory[e.cat]||0)+e.amount;});
+  const total=monthExp.reduce((s,e)=>s+e.amount,0);
+  const sumEl=document.getElementById('expenseSummary');
+  sumEl.innerHTML=monthExp.length?`<div style="display:flex;justify-content:space-between;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#FFF1F3,#F5F3FF);border-radius:10px"><span style="font-weight:700">This Month</span><span style="font-family:Nunito;font-size:18px;font-weight:900;color:var(--red)">₹${total.toLocaleString('en-IN')}</span></div>`+Object.entries(byCategory).map(([cat,amt])=>`<div class="payment-item"><div class="payment-name">${cat}</div><div class="payment-amount" style="color:var(--red)">₹${amt.toLocaleString('en-IN')}</div></div>`).join(''):'<p style="color:var(--gray)">No expenses this month</p>';
+  const histEl=document.getElementById('expenseHistory');
+  const expenses=Object.entries(S.expenses||{}).sort((a,b)=>(b[1].date||'').localeCompare(a[1].date||'')).slice(0,30);
+  histEl.innerHTML=expenses.length?expenses.map(([k,e])=>`<div class="expense-item"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px">${e.cat.split(' ')[0]}</span><div><div style="font-weight:700;font-size:13px">${e.desc||e.cat}</div><div style="font-size:11px;color:var(--gray)">${fmtDate(e.date)}</div></div></div><div style="display:flex;align-items:center;gap:6px"><div style="font-family:Nunito;font-size:16px;font-weight:900;color:var(--red)">₹${e.amount.toLocaleString('en-IN')}</div><button onclick="fbRemove('expenses/${k}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px">🗑</button></div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">🧾</div><p class="empty-text">No expenses</p></div>';
+}
+
+// ============================================================
+// NOTICES
+// ============================================================
+function postNotice(){
+  const title=document.getElementById('noticeTitle').value.trim();
+  const body=document.getElementById('noticeBody').value.trim();
+  if(!title||!body){showToast('❌ Title aur message required');return;}
+  const id=Date.now().toString();
+  fbSet('notices/'+id,{id,title,body,date:today()});
+  document.getElementById('noticeTitle').value='';document.getElementById('noticeBody').value='';
+  showToast('📢 Notice posted!');
+}
+function renderNotices(){
+  renderComplaints();renderPollResults();
+  const el=document.getElementById('noticeList');
+  const notices=Object.entries(S.notices||{}).sort((a,b)=>(b[1].date||'').localeCompare(a[1].date||''));
+  el.innerHTML=notices.length?notices.map(([k,n])=>`<div class="notice-item"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="notice-title">📌 ${escHtml(n.title)}</div>${S.userType==='admin'?`<button onclick="fbRemove('notices/${k}')" style="background:none;border:none;color:var(--red);cursor:pointer">🗑</button>`:''}</div><div class="notice-meta">${fmtDate(n.date)}</div><div style="font-size:13px;margin-top:6px">${escHtml(n.body)}</div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">📢</div><p class="empty-text">No notices yet</p></div>';
+}
+
+// ============================================================
+// MY ATTENDANCE
+// ============================================================
+function renderMyAttendance(){
+  if(!S.currentUser)return;
+  const id=S.currentUser.id;const mo=thisMonth();
+  const pd=getMonthDaysPresent(id,mo);
+  const abd=Object.entries(S.attendance||{}).filter(([d,obj])=>d.startsWith(mo)&&obj&&obj[id]==='absent').length;
+  const days=Object.entries(S.attendance||{}).filter(([d])=>d.startsWith(mo)).sort((a,b)=>b[0].localeCompare(a[0]));
+  const el=document.getElementById('myAttendanceContent');
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px"><div style="background:#D1FAE5;border-radius:12px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--teal)">${pd}</div><div style="font-size:11px;color:#065F46;font-weight:700">Present</div></div><div style="background:#FEE2E2;border-radius:12px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--red)">${abd}</div><div style="font-size:11px;color:#991B1B;font-weight:700">Absent</div></div><div style="background:var(--light-gray);border-radius:12px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--purple)">${days.length}</div><div style="font-size:11px;color:var(--gray);font-weight:700">Tracked</div></div></div>`+
+  (days.length?days.map(([d,obj])=>{
+    const status=obj[id];const off=isMessOff(d);const onLeave=isOnLeave(id,d);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${off?'#FEE2E2':onLeave?'#FEF3C7':status==='present'?'#D1FAE5':status==='absent'?'#FEE2E2':'var(--light-gray)'};border-radius:10px;margin-bottom:6px"><span style="font-weight:700;font-size:13px">${fmtDate(d)}</span><span style="font-size:18px">${off?'🚫':onLeave?'✈️':status==='present'?'✅':status==='absent'?'❌':'—'}</span></div>`;
+  }).join(''):'<p style="color:var(--gray);text-align:center;padding:14px">No attendance this month</p>');
+  const leaves=Object.values(S.leaves||{}).filter(l=>l.memberId===id).sort((a,b)=>(b.applied||'').localeCompare(a.applied||''));
+  const leaveEl=document.getElementById('myLeaveHistory');
+  leaveEl.innerHTML=leaves.length?leaves.map(l=>`<div class="leave-item"><div style="font-weight:700;font-size:13px">📅 ${fmtDate(l.from)}${l.to&&l.to!==l.from?' → '+fmtDate(l.to):''}</div><div style="font-size:12px;color:var(--gray);margin-top:3px">${escHtml(l.reason||'On leave')}</div></div>`).join(''):`<div class="empty-state"><div class="empty-icon">📆</div><p class="empty-text">No leave notes</p></div>`;
+}
+function applyLeave(){
+  if(!S.currentUser)return;
+  const from=document.getElementById('leaveFrom').value;
+  const to=document.getElementById('leaveTo').value;
+  const reason=document.getElementById('leaveReason').value.trim();
+  if(!from){showToast('❌ Date select karo');return;}
+  const id=Date.now().toString();
+  fbSet('leaves/'+id,{id,memberId:S.currentUser.id,from,to:to||from,reason,applied:today()});
+  document.getElementById('leaveReason').value='';
+  showToast('📩 Admin ko bata diya!');
+}
+function markMyAttendance(status){
+  if(!S.currentUser)return;
+  const t2=today();
+  if(isMessOff(t2)){showToast('🚫 Mess is OFF today');return;}
+  if(status===null){fbRemove('attendance/'+t2+'/'+S.currentUser.id);}
+  else{fbUpdate('attendance/'+t2,{[S.currentUser.id]:status});}
+  showToast(status==='present'?'✅ Present!':status==='absent'?'❌ Absent':'Status cleared');
+}
+
+// ============================================================
+// MY PROFILE
+// ============================================================
+function renderMyProfile(){
+  if(!S.currentUser)return;
+  const m=Object.values(S.members||{}).find(x=>x.id===S.currentUser.id)||S.currentUser;
+  S.currentUser=m;
+  const mo=thisMonth();const b=calcBill(m,mo);
+  const selfEdit=document.getElementById('selfEditCard');
+  if(selfEdit){
+    selfEdit.style.display='block';
+    document.getElementById('editName').value=m.name;
+    if(m.memberType==='tiffin'){document.getElementById('editHostelFields').style.display='none';document.getElementById('editTiffinFields').style.display='block';document.getElementById('editAddress').value=m.address||'';document.getElementById('editDeliveryNote').value=m.deliveryNote||'';}
+    else{document.getElementById('editHostelFields').style.display='block';document.getElementById('editTiffinFields').style.display='none';document.getElementById('editRoom').value=m.room||'';}
+  }
+  const myPay=Object.values(S.payments||{}).filter(p=>p.memberId===m.id);
+  const totalPaid=myPay.reduce((s,p)=>s+p.amount,0);
+  document.getElementById('myProfileContent').innerHTML=`<div class="profile-header"><div class="profile-avatar-big">${(m.name||'?')[0].toUpperCase()}</div><div style="font-family:Nunito;font-size:22px;font-weight:900">${m.name}</div><div style="font-size:12px;opacity:0.8;margin-top:4px">Joined: ${fmtDate(m.joinDate)}</div>${m.room?`<div style="font-size:12px;opacity:0.8">Room ${m.room}</div>`:''}<div style="margin-top:8px"><span style="background:rgba(255,255,255,0.25);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700">${m.memberType==='tiffin'?'🛵 Tiffin':'🏠 Hostel'} · ${m.mealPlan||2} Meal/day</span></div></div><div class="card"><div class="card-title">📊 My Billing</div>${m.memberType==='tiffin'?`<div class="info-row"><span class="info-key">Total Paid</span><span class="info-val" style="color:var(--teal)">₹${totalPaid.toLocaleString('en-IN')}</span></div><div class="info-row"><span class="info-key">Address</span><span class="info-val" style="font-size:12px">${m.address||'—'}</span></div>`:`<div class="info-row"><span class="info-key">Days Present</span><span class="info-val">${b.daysPresent}</span></div><div class="info-row"><span class="info-key">Bill This Month</span><span class="info-val" style="color:var(--purple)">₹${(b.bill||0).toLocaleString('en-IN')}</span></div><div class="info-row"><span class="info-key">Carry Forward</span><span class="info-val" style="color:var(--teal)">₹${b.carryForward.toLocaleString('en-IN')}</span></div><div class="info-row"><span class="info-key">Total Advance</span><span class="info-val" style="color:var(--teal)">₹${b.totalAdvance.toLocaleString('en-IN')}</span></div><div class="info-row"><span class="info-key">Due</span><span class="info-val" style="color:${b.due>0?'var(--red)':'var(--teal)'}">₹${b.due.toLocaleString('en-IN')}</span></div>${b.remaining>0?`<div class="info-row"><span class="info-key">Will Carry Forward</span><span class="info-val" style="color:var(--teal)">₹${b.remaining.toLocaleString('en-IN')}</span></div>`:''}<div class="info-row"><span class="info-key">Total Ever Paid</span><span class="info-val">₹${totalPaid.toLocaleString('en-IN')}</span></div>`}</div></div>`;
+}
+function saveSelfEdit(){
+  if(!S.currentUser)return;
+  const newName=document.getElementById('editName').value.trim();
+  if(!newName){showToast('❌ Name empty nahi');return;}
+  const update={name:newName};
+  if(S.currentUser.memberType==='tiffin'){update.address=document.getElementById('editAddress').value.trim();update.deliveryNote=document.getElementById('editDeliveryNote').value.trim();}
+  else{update.room=document.getElementById('editRoom').value.trim();}
+  fbUpdate('members/'+S.currentUser.id,update);
+  document.getElementById('topbarUser').textContent=(S.currentUser.memberType==='tiffin'?'🛵':'🏠')+' '+newName;
+  showToast('✅ Profile updated!');
+}
+
+// ============================================================
+// MY PAYMENT
+// ============================================================
+function renderMyPayment(){
+  if(!S.currentUser)return;
+  const mo=thisMonth();const b=calcBill(S.currentUser,mo);
+  const billEl=document.getElementById('myBillDetail');
+  if(S.currentUser.memberType==='tiffin'){billEl.innerHTML=`<div class="billing-card"><div style="font-size:13px;font-weight:600">Tiffin Member</div><div class="billing-amount">₹${b.paid.toLocaleString('en-IN')} paid</div></div>`;}
+  else{billEl.innerHTML=`<div class="billing-card"><div style="font-size:13px;font-weight:600">${b.daysPresent} days × ₹${b.ratePerDay}${b.applyMessCharge?' + ₹'+b.messCharge+' (mess charge)':''}</div><div class="billing-amount">₹${(b.bill||0).toLocaleString('en-IN')}</div><div style="font-size:11px;color:var(--gray);margin-top:4px">Cap: ₹${b.cap} · Advance: ₹${b.totalAdvance} · <span style="color:${b.due>0?'var(--red)':'var(--teal)'}">Due: ₹${b.due}</span></div>${b.remaining>0?`<div style="margin-top:6px;color:var(--teal);font-size:12px;font-weight:700">💚 ₹${b.remaining} carry forward next month</div>`:''}</div>`;}
+  const cfEl=document.getElementById('myCarryForwardDetail');
+  const prevMo=getPrevMonth(mo);const cf=getCarryForward(S.currentUser.id,prevMo);
+  cfEl.innerHTML=cf>0?`<div class="carry-forward-card"><div class="carry-forward-amt">₹${cf.toLocaleString('en-IN')}</div><div style="font-size:12px;color:#065F46;margin-top:3px">Carry forward from ${prevMo}</div></div>`:'<div style="color:var(--gray);font-size:13px;padding:10px;text-align:center">No carry forward from last month</div>';
+  const qrEl=document.getElementById('qrDisplay');const upiEl=document.getElementById('qrUpiId');
+  if(S.adminUPI){upiEl.textContent=S.adminUPI;qrEl.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=${encodeURIComponent(S.adminUPI)}&pn=${encodeURIComponent(S.adminName)}&cu=INR" class="qr-img" onerror="this.parentElement.innerHTML='<div style=\\'font-size:60px\\'>📱</div>'">`;}
+  else{qrEl.innerHTML='<div style="font-size:60px">📱</div>';upiEl.textContent='UPI not set';}
+  const myPay=Object.values(S.payments||{}).filter(p=>p.memberId===S.currentUser.id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const el=document.getElementById('myPayHistory');
+  el.innerHTML=myPay.length?myPay.map(p=>`<div class="payment-item"><div><div class="payment-name">₹${p.amount.toLocaleString('en-IN')}</div><div class="payment-detail">${fmtDate(p.date)}${p.note?' · '+p.note:''}</div></div><span class="badge badge-paid">✓ Paid</span></div>`).join(''):'<div class="empty-state"><div class="empty-icon">💸</div><p class="empty-text">No payments yet</p></div>';
+}
+function previewSS(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img2=new Image();
+    img2.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const MAX=400;let w=img2.width,h=img2.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img2,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.4);
+      const previewImg=document.getElementById('ssPreview');
+      previewImg.src=compressed;previewImg.dataset.compressed=compressed;previewImg.style.display='block';
+      document.getElementById('ssUploadText').textContent='✅ Screenshot selected';
+    };
+    img2.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function submitSS(){
+  if(!S.currentUser)return;
+  const amount=document.getElementById('ssAmount').value;
+  const previewImg=document.getElementById('ssPreview');
+  const imgSrc=previewImg.dataset.compressed||'';
+  if(!amount){showToast('❌ Amount daalo');return;}
+  if(!imgSrc||!imgSrc.startsWith('data:')){showToast('❌ Screenshot select karo');return;}
+  const id=Date.now().toString();
+  fbSet('screenshots/'+id,{id,memberId:S.currentUser.id,amount:parseInt(amount),screenshot:imgSrc,date:today(),status:'pending'});
+  showToast('📤 Sent to admin for verification!');
+  document.getElementById('ssAmount').value='';
+  previewImg.style.display='none';previewImg.dataset.compressed='';
+  document.getElementById('ssUploadText').textContent='Tap to select screenshot';
+}
+function whatsappAdmin(){
+  const amount=document.getElementById('ssAmount').value||'____';
+  const name=S.currentUser?.name||'Member';
+  const mo=thisMonth();const b=calcBill(S.currentUser,mo);
+  const msg=`Hello! Main ${name} hoon Tara Foodies se.\n\nMaine ₹${amount} pay kar diya.\nBill: ₹${(b.bill||0)} · Due: ₹${b.due}\n\nPlease verify kar do. 🙏`;
+  const wa=S.adminWA||S.adminPhone;
+  if(wa){const n=wa.replace(/^\+/,'');const waNum=n.length===10?'91'+n:n;window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`);}
+  else showToast('❌ Admin WA not set');
+}
+
+// ============================================================
+// CLOSEOUT
+// ============================================================
+function doMonthCloseout(){
+  const mo=thisMonth();
+  let html='<div style="font-weight:800;font-size:14px;margin-bottom:12px">🔄 Carry Forward Results</div>';
+  Object.values(S.members||{}).forEach(m=>{
+    if(m.memberType==='tiffin')return;
+    const b=calcBill(m,mo);
+    const nextMo=getNextMonth(mo);
+    fbUpdate('carryForward/'+m.id,{[mo.replace('-','_')]:b.remaining});
+    html+=`<div style="background:linear-gradient(135deg,#FEF3C7,#FFFBEB);border-radius:12px;padding:12px;margin-bottom:8px;border-left:4px solid var(--amber)"><div style="display:flex;justify-content:space-between"><div><div style="font-weight:700">${m.name}</div><div style="font-size:11px;color:var(--gray)">Bill ₹${b.bill} · Adv ₹${b.totalAdvance}</div></div><div style="text-align:right"><div style="font-family:Nunito;font-weight:900;font-size:18px;color:var(--teal)">₹${b.remaining}</div><div style="font-size:10px;color:var(--gray)">→ ${nextMo}</div></div></div></div>`;
+  });
+  document.getElementById('closeoutResult').innerHTML=html;
+  showToast('✅ Carry forwards applied!');
+}
+
+// ============================================================
+// REPORT
+// ============================================================
+function renderPerDayCost(){
+  const mo=thisMonth();
+  const totalExp=Object.values(S.expenses||{}).filter(e=>e.date&&e.date.startsWith(mo)).reduce((s,e)=>s+e.amount,0);
+  const totalPD=Object.entries(S.attendance||{}).filter(([d])=>d.startsWith(mo)&&!isMessOff(d)).reduce((sum,[,obj])=>sum+(obj?Object.values(obj).filter(v=>v==='present').length:0),0);
+  const cpm=totalPD>0?(totalExp/totalPD).toFixed(2):0;
+  const el=document.getElementById('perDayCost');
+  el.innerHTML=`<div class="cost-highlight"><div style="font-family:Nunito;font-size:36px;font-weight:900">₹${Number(cpm).toLocaleString('en-IN')}</div><div style="font-size:13px;opacity:0.85">Cost per person per meal</div></div><div style="display:flex;gap:10px"><div style="flex:1;background:var(--light-gray);border-radius:10px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--rose)">₹${totalExp.toLocaleString('en-IN')}</div><div style="font-size:11px;color:var(--gray)">Total Expense</div></div><div style="flex:1;background:var(--light-gray);border-radius:10px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--purple)">${totalPD}</div><div style="font-size:11px;color:var(--gray)">Meals Served</div></div></div>`;
+}
+function generateReport(){
+  const mo=thisMonth();
+  const moName=new Date(mo+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  const totalCollected=Object.values(S.payments||{}).filter(p=>p.date&&p.date.startsWith(mo)).reduce((s,p)=>s+p.amount,0);
+  const totalExp=Object.values(S.expenses||{}).filter(e=>e.date&&e.date.startsWith(mo)).reduce((s,e)=>s+e.amount,0);
+  const profit=totalCollected-totalExp;
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px">📅 ${moName}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"><div style="background:#D1FAE5;border-radius:10px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--teal)">₹${totalCollected.toLocaleString('en-IN')}</div><div style="font-size:11px;color:#065F46;font-weight:700">Collected</div></div><div style="background:#FEE2E2;border-radius:10px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:18px;font-weight:900;color:var(--red)">₹${totalExp.toLocaleString('en-IN')}</div><div style="font-size:11px;color:#991B1B;font-weight:700">Expenses</div></div></div><div style="background:${profit>=0?'#D1FAE5':'#FEE2E2'};border-radius:10px;padding:14px;text-align:center;margin-bottom:14px"><div style="font-family:Nunito;font-size:24px;font-weight:900;color:${profit>=0?'var(--teal)':'var(--red)'}">₹${Math.abs(profit).toLocaleString('en-IN')}</div><div style="font-size:12px;font-weight:700">${profit>=0?'Net Surplus':'Net Deficit'}</div></div>`;
+  html+='<div style="font-weight:800;font-size:14px;margin-bottom:8px">👥 Member-wise</div>';
+  html+=Object.values(S.members||{}).map(m=>{
+    const b=calcBill(m,mo);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--light-gray);border-radius:8px;margin-bottom:6px"><div><div style="font-weight:700;font-size:13px">${m.memberType==='tiffin'?'🛵':'🏠'} ${m.name}</div><div style="font-size:11px;color:var(--gray)">${m.memberType==='tiffin'?'Tiffin':b.daysPresent+' days · Bill ₹'+(b.bill||0)}</div></div><div style="text-align:right"><div style="font-family:Nunito;font-weight:800;font-size:15px;color:var(--teal)">₹${b.paid.toLocaleString('en-IN')}</div><span class="badge ${m.memberType==='tiffin'?'badge-partial':b.due===0?'badge-paid':'badge-unpaid'}">${m.memberType==='tiffin'?'Tiffin':b.due===0?'Paid':'₹'+b.due+' Due'}</span></div></div>`;
+  }).join('');
+  document.getElementById('reportContent').innerHTML=html;
+  openModal('reportModal');
+}
+function generateMonthlyBill(){
+  const mo=thisMonth();
+  const moName=new Date(mo+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  let html=`<div style="font-weight:800;font-size:16px;margin-bottom:14px;text-align:center">📄 Bills — ${moName}</div>`;
+  html+=Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel').map(m=>{
+    const b=calcBill(m,mo);
+    return `<div style="border:2px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-family:Nunito;font-weight:900;font-size:16px">${m.name}</div><span class="badge ${b.due===0?'badge-paid':'badge-unpaid'}">${b.due===0?'✅ Clear':'₹'+b.due.toLocaleString('en-IN')+' Due'}</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px"><div style="color:var(--gray)">Days Present</div><div style="font-weight:700">${b.daysPresent}</div><div style="color:var(--gray)">Rate/day</div><div style="font-weight:700">₹${b.ratePerDay}</div><div style="color:var(--gray)">Mess Charge</div><div style="font-weight:700">${b.applyMessCharge?'₹'+b.messCharge:'None'}</div><div style="color:var(--gray)">Bill</div><div style="font-weight:700;color:var(--purple)">₹${(b.bill||0).toLocaleString('en-IN')}</div><div style="color:var(--gray)">Carry Forward</div><div style="font-weight:700;color:var(--teal)">₹${b.carryForward.toLocaleString('en-IN')}</div><div style="color:var(--gray)">Total Advance</div><div style="font-weight:700;color:var(--teal)">₹${b.totalAdvance.toLocaleString('en-IN')}</div><div style="color:var(--gray)">Balance Due</div><div style="font-weight:700;color:${b.due>0?'var(--red)':'var(--teal)'}">₹${b.due.toLocaleString('en-IN')}</div>${b.remaining>0?`<div style="color:var(--gray)">Will Carry</div><div style="font-weight:700;color:var(--teal)">₹${b.remaining.toLocaleString('en-IN')}</div>`:''}</div></div>`;
+  }).join('');
+  document.getElementById('billContent').innerHTML=html;
+  closeModal('reportModal');openModal('billModal');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', ()=>{
+  // Load admin config first
+  db.ref('config').once('value').then(snap=>{
+    const cfg=snap.val()||{};
+    if(cfg.adminName) S.adminName=cfg.adminName;
+    if(cfg.adminPhone) S.adminPhone=cfg.adminPhone;
+    if(cfg.adminUPI) S.adminUPI=cfg.adminUPI;
+    if(cfg.adminWA) S.adminWA=cfg.adminWA;
+    if(cfg.adminPinHash) S.adminPinHash=cfg.adminPinHash;
+    if(cfg.settings) S.settings=cfg.settings;
+    if(cfg.billing) S.billing=cfg.billing;
+    if(cfg.poll!==undefined) S.poll=cfg.poll;
+
+    // If first time, save default config
+    if(!cfg.adminName){
+      db.ref('config').set({
+        adminName:'Naman',adminPhone:'8601249826',
+        adminUPI:'namankushwaha679@okicici',adminWA:'8601249826',
+        adminPinHash:hashPin('7888'),
+        settings:{complaint:false,birthday:false},
+        billing:{cap1:1500,cap2:2400,cap3:2800,messCharge:500},
+        poll:null
+      });
+    }
+
+    setupListeners();
+    setDates();
+    document.getElementById('langLabel').textContent='हिं';
+
+    // Hide loading, show login
+    setTimeout(()=>{
+      document.getElementById('loadingScreen').style.display='none';
+      document.getElementById('loginScreen').classList.add('show');
+    },1500);
+  }).catch(err=>{
+    console.error('Firebase error:',err);
+    document.getElementById('loadingScreen').innerHTML=`<div style="text-align:center;color:white;padding:20px"><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;font-weight:700;margin-bottom:8px">Connection Error</div><div style="font-size:14px;opacity:0.8">Firebase se connect nahi ho pa raha.<br>Internet check karo aur reload karo.</div><button onclick="location.reload()" style="margin-top:20px;background:white;color:#F43F5E;border:none;padding:12px 24px;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px">🔄 Reload</button></div>`;
+  });
+});
+</script>
+</body>
+</html>

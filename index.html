@@ -122,17 +122,14 @@
   .att-member{background:var(--light-gray);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;}
   .att-member.present{background:#D1FAE5;border-color:var(--green);}
   .att-member.absent{background:#FEE2E2;border-color:var(--red);}
-  .att-member.nomeal{background:#EDE9FE;border-color:var(--purple);}
   .att-member.leave{background:#FEF3C7;border-color:var(--amber);opacity:0.7;}
   .att-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--purple-light));margin:0 auto 5px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:12px;}
   .att-member.present .att-avatar{background:linear-gradient(135deg,var(--teal),var(--teal-light));}
   .att-member.absent .att-avatar{background:linear-gradient(135deg,#EF4444,#F87171);}
-  .att-member.nomeal .att-avatar{background:linear-gradient(135deg,var(--purple),var(--purple-light));}
   .att-name{font-size:10px;font-weight:700;}
   .att-status{font-size:9px;margin-top:2px;font-weight:600;}
   .att-member.present .att-status{color:var(--teal);}
   .att-member.absent .att-status{color:var(--red);}
-  .att-member.nomeal .att-status{color:var(--purple);}
   .att-member.leave .att-status{color:var(--amber);}
   .menu-history-item{padding:12px 14px;border-radius:10px;background:var(--light-gray);margin-bottom:8px;}
   .notice-item{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid var(--amber);}
@@ -428,12 +425,7 @@
         <div class="card-title">✅ Mark Attendance</div>
         <div id="messOffAttWarning" style="display:none;background:#FEE2E2;border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;font-weight:700;color:var(--red)">🚫 Mess is OFF today</div>
         <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="attDate" onchange="renderAttendance()"></div>
-        <div style="background:var(--light-gray);border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--gray);font-weight:600">
-          ✅ Present (khana khaya) → Rate lagega<br>
-          🚫 No Meal (aaya, khana nahi) → Rate nahi<br>
-          ❌ Absent → Rate nahi
-        </div>
-        <div style="font-size:12px;color:var(--gray);margin-bottom:10px;font-weight:600">Tap: Present ✅ → No Meal 🚫 → Absent ❌ → Clear</div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:10px;font-weight:600">Tap: Present ✅ → Absent ❌ → Clear</div>
         <div class="attendance-grid" id="attendanceGrid"></div>
         <div style="display:flex;gap:8px;margin-top:14px">
           <button class="btn btn-teal" onclick="markAllPresent()" style="flex:1">✅ All Present</button>
@@ -597,18 +589,7 @@
 
     <!-- MY ATTENDANCE -->
     <div class="section" id="section-myattendance">
-      <div class="card">
-        <div class="card-title">📅 Mark My Attendance</div>
-        <div style="background:var(--light-gray);border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--gray);font-weight:600">
-          Tum 1 mahine pehle tak ki attendance mark/change kar sakti ho
-        </div>
-        <div class="form-group">
-          <label class="form-label">Date Select Karo</label>
-          <input type="date" class="form-input" id="memberAttDate" onchange="renderMemberAttDay()">
-        </div>
-        <div id="memberAttDayStatus"></div>
-      </div>
-      <div class="card"><div class="card-title">📊 This Month Summary</div><div id="myAttendanceContent"></div></div>
+      <div class="card"><div class="card-title">📅 My Attendance</div><div id="myAttendanceContent"></div></div>
       <div class="card">
         <div class="card-title">✈️ Apply Leave</div>
         <div class="form-group"><label class="form-label">From</label><input type="date" class="form-input" id="leaveFrom"></div>
@@ -969,8 +950,7 @@ function getMemberCap(m){return S.billing['cap'+(m.mealPlan||2)]||2400;}
 function getRatePerDay(m){return Math.round(getMemberCap(m)/30);}
 
 function getMonthDaysPresent(memberId,month){
-  // Only count 'present' (khana khaya) — 'nomeal' = aaya but nahi khaya, NOT counted
-  return Object.entries(S.attendance||{}).filter(([d,obj])=>{
+  return Object.entries(S.attendance).filter(([d,obj])=>{
     if(!d.startsWith(month))return false;
     if(S.messOff&&S.messOff[d])return false;
     return obj&&obj[memberId]==='present';
@@ -1066,7 +1046,7 @@ function showSection(name){
   if(name==='payments')renderPayments();
   if(name==='expenses')renderExpenses();
   if(name==='notices')renderNotices();
-  if(name==='myattendance'){renderMyAttendance();renderMemberAttDay();}
+  if(name==='myattendance')renderMyAttendance();
   if(name==='mypayment')renderMyPayment();
   if(name==='myprofile')renderMyProfile();
   if(name==='chat'){renderMemberChat();markMemberChatRead();}
@@ -1144,18 +1124,8 @@ function renderHome(){
     const myStatus=todayAtt[S.currentUser.id];
     const attEl=document.getElementById('myTodayAttStatus');
     if(off){attEl.innerHTML=`<div style="color:var(--red);font-weight:700">🚫 Mess is OFF today</div>`;}
-    else if(!myStatus){
-      attEl.innerHTML=`<div style="color:var(--gray);font-size:13px;margin-bottom:10px">Aaj ki attendance mark karo:</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <button onclick="markMyAttendance('present')" style="padding:12px 6px;border-radius:12px;border:2px solid var(--teal);background:#D1FAE5;cursor:pointer;font-size:12px;font-weight:700;color:var(--teal)">✅<br>Present<br><span style="font-size:10px">(khana khaya)</span></button>
-          <button onclick="markMyAttendance('nomeal')" style="padding:12px 6px;border-radius:12px;border:2px solid var(--purple);background:#EDE9FE;cursor:pointer;font-size:12px;font-weight:700;color:var(--purple)">🚫<br>No Meal<br><span style="font-size:10px">(nahi khaya)</span></button>
-          <button onclick="markMyAttendance('absent')" style="padding:12px 6px;border-radius:12px;border:2px solid var(--red);background:#FEE2E2;cursor:pointer;font-size:12px;font-weight:700;color:var(--red)">❌<br>Absent<br><span style="font-size:10px">(nahi aaya)</span></button>
-        </div>`;
-    }else{
-      const icon=myStatus==='present'?'✅':myStatus==='nomeal'?'🚫':'❌';
-      const label=myStatus==='present'?'Present Today (khana khaya)':myStatus==='nomeal'?'No Meal Today (nahi khaya)':'Absent Today';
-      attEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><span style="font-size:32px">${icon}</span><div><div style="font-weight:700">${label}</div><button onclick="markMyAttendance(null)" style="background:none;border:none;color:var(--rose);font-size:12px;cursor:pointer;font-weight:700;padding:0;margin-top:4px">Change karo</button></div></div>`;
-    }
+    else if(!myStatus){attEl.innerHTML=`<div style="color:var(--gray);font-size:13px;margin-bottom:8px">Not marked yet</div><button class="btn btn-teal" onclick="markMyAttendance('present')" style="margin-bottom:6px">✅ I'm Present</button><button class="btn btn-rose" onclick="markMyAttendance('absent')">❌ Mark Absent</button>`;}
+    else{attEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><span style="font-size:32px">${myStatus==='present'?'✅':'❌'}</span><div><div style="font-weight:700">${myStatus==='present'?'Present Today':'Absent Today'}</div><button onclick="markMyAttendance(null)" style="background:none;border:none;color:var(--rose);font-size:12px;cursor:pointer;font-weight:700;padding:0;margin-top:4px">Change</button></div></div>`;}
 
     const notices=Object.values(S.notices||{}).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     const noticeEl=document.getElementById('latestNotice');
@@ -1521,9 +1491,6 @@ function renderMenuHistory(){
 // ============================================================
 // ATTENDANCE
 // ============================================================
-// ============================================================
-// ATTENDANCE (Admin) — koi bhi date, koi bhi member
-// ============================================================
 function renderAttendance(){
   const date=document.getElementById('attDate')?.value||today();
   updateMessToggle();
@@ -1535,128 +1502,41 @@ function renderAttendance(){
   grid.innerHTML=hostelMembers.length?hostelMembers.map(m=>{
     const onLeave=isOnLeave(m.id,date);
     const s=attState[m.id];
-    const cls=s==='present'?'present':s==='nomeal'?'nomeal':s==='absent'?'absent':onLeave?'leave':'';
-    const statusText=s==='present'?'Present ✅':s==='nomeal'?'No Meal 🚫':s==='absent'?'Absent ❌':onLeave?'Leave ✈️':'Tap';
-    return `<div class="att-member ${cls}" id="att-${m.id}" onclick="cycleAtt('${m.id}')"><div class="att-avatar">${(m.name||'?')[0].toUpperCase()}</div><div class="att-name">${m.name.split(' ')[0]}</div><div class="att-status">${statusText}</div></div>`;
+    const cls=s==='present'?'present':s==='absent'?'absent':onLeave?'leave':'';
+    return `<div class="att-member ${cls}" id="att-${m.id}" onclick="cycleAtt('${m.id}')"><div class="att-avatar">${(m.name||'?')[0].toUpperCase()}</div><div class="att-name">${m.name.split(' ')[0]}</div><div class="att-status">${s==='present'?'Present':s==='absent'?'Absent':onLeave?'Leave':'Tap'}</div></div>`;
   }).join(''):'<p style="color:var(--gray)">Add hostel members first</p>';
   renderAttStats();
 }
-
-// 4 states cycle: null → present → nomeal → absent → null
 function cycleAtt(id){
   const cur=attState[id];
-  attState[id]=cur===null?'present':cur==='present'?'nomeal':cur==='nomeal'?'absent':null;
+  attState[id]=cur===null?'present':cur==='present'?'absent':null;
   const el=document.getElementById('att-'+id);
   if(!el)return;
   const date=document.getElementById('attDate')?.value||today();
   const onLeave=isOnLeave(id,date);
-  const s=attState[id];
-  el.className='att-member'+(s==='present'?' present':s==='nomeal'?' nomeal':s==='absent'?' absent':onLeave?' leave':'');
-  el.querySelector('.att-status').textContent=s==='present'?'Present ✅':s==='nomeal'?'No Meal 🚫':s==='absent'?'Absent ❌':onLeave?'Leave ✈️':'Tap';
+  el.className='att-member'+(attState[id]==='present'?' present':attState[id]==='absent'?' absent':onLeave?' leave':'');
+  el.querySelector('.att-status').textContent=attState[id]==='present'?'Present':attState[id]==='absent'?'Absent':onLeave?'Leave':'Tap';
 }
-
 function markAllPresent(){
   const date=document.getElementById('attDate')?.value||today();
-  Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel').forEach(m=>{
-    if(!isOnLeave(m.id,date))attState[m.id]='present';
-  });
+  Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel').forEach(m=>{if(!isOnLeave(m.id,date))attState[m.id]='present';});
   renderAttendance();
 }
-
 function saveAttendance(){
   const date=document.getElementById('attDate').value;
   if(!date){showToast('❌ Date select karo');return;}
-  // Clean null values before saving
-  const toSave={};
-  Object.entries(attState).forEach(([k,v])=>{if(v!==null)toSave[k]=v;});
-  fbSet('attendance/'+date,toSave);
-  showToast('✅ Attendance saved for '+fmtDate(date)+'!');
+  fbSet('attendance/'+date,{...attState});
+  showToast('✅ Attendance saved!');
 }
-
 function renderAttStats(){
   const mo=thisMonth();
   const hostelMembers=Object.values(S.members||{}).filter(m=>!m.memberType||m.memberType==='hostel');
   const el=document.getElementById('attendanceStats');
   el.innerHTML=hostelMembers.length?hostelMembers.map(m=>{
     const pd=getMonthDaysPresent(m.id,mo);
-    const nm=Object.entries(S.attendance||{}).filter(([d,obj])=>d.startsWith(mo)&&obj&&obj[m.id]==='nomeal').length;
-    const ab=Object.entries(S.attendance||{}).filter(([d,obj])=>d.startsWith(mo)&&obj&&obj[m.id]==='absent').length;
-    return `<div class="payment-item"><div><div class="payment-name">${m.name}</div><div class="payment-detail">
-      <span class="tag tag-present">${pd} present</span>
-      <span style="background:#EDE9FE;color:#5B21B6;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-right:4px">${nm} no meal</span>
-      <span class="tag tag-absent">${ab} absent</span>
-    </div></div><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--purple)">${pd}</div></div>`;
+    const tracked=Object.keys(S.attendance||{}).filter(d=>d.startsWith(mo)).length;
+    return `<div class="payment-item"><div><div class="payment-name">${m.name}</div><div class="payment-detail"><span class="tag tag-present">${pd} present</span><span class="tag tag-absent">${tracked-pd} other</span></div></div><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--purple)">${pd}</div></div>`;
   }).join(''):'<div class="empty-state"><div class="empty-icon">📊</div><p class="empty-text">No hostel members</p></div>';
-}
-
-// ============================================================
-// MY ATTENDANCE (Member) — 1 mahine pehle tak
-// ============================================================
-function renderMemberAttDay(){
-  if(!S.currentUser)return;
-  const date=document.getElementById('memberAttDate').value;
-  const statusEl=document.getElementById('memberAttDayStatus');
-  if(!date){statusEl.innerHTML='';return;}
-
-  // Date limit check — 1 month back, no future
-  const t2=today();
-  const oneMonthAgo=new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth()-1);
-  const minDate=oneMonthAgo.toISOString().split('T')[0];
-
-  if(date>t2){
-    statusEl.innerHTML=`<div style="background:#FEE2E2;border-radius:10px;padding:12px;color:var(--red);font-weight:700;font-size:13px">❌ Future date pe attendance nahi ho sakti</div>`;
-    return;
-  }
-  if(date<minDate){
-    statusEl.innerHTML=`<div style="background:#FEE2E2;border-radius:10px;padding:12px;color:var(--red);font-weight:700;font-size:13px">❌ 1 mahine se pehle ki date nahi badal sakte</div>`;
-    return;
-  }
-  if(isMessOff(date)){
-    statusEl.innerHTML=`<div style="background:#FEE2E2;border-radius:10px;padding:12px;color:var(--red);font-weight:700;font-size:13px">🚫 Is din mess band tha</div>`;
-    return;
-  }
-
-  // Loading show karo
-  statusEl.innerHTML=`<div style="text-align:center;padding:14px;color:var(--gray)">⏳ Loading...</div>`;
-
-  // Firebase se DIRECTLY fetch karo us date ka data
-  db.ref('attendance/'+date).once('value').then(snap=>{
-    const dateData=snap.val()||{};
-    const current=dateData[S.currentUser.id]||null;
-    const onLeave=isOnLeave(S.currentUser.id,date);
-
-    const btnStyle=(status,selColor,selBg)=>`padding:12px 6px;border-radius:12px;border:3px solid ${current===status?selColor:'var(--border)'};background:${current===status?selBg:'white'};cursor:pointer;font-size:12px;font-weight:700;color:${current===status?selColor:'var(--gray)'};transition:all .2s`;
-
-    statusEl.innerHTML=`<div style="background:var(--light-gray);border-radius:12px;padding:14px">
-      <div style="font-weight:700;margin-bottom:12px">📅 ${fmtDate(date)} ki attendance:</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-        <button onclick="saveMemberAtt('${date}','present')" style="${btnStyle('present','var(--teal)','#D1FAE5')}">✅<br>Present<br><span style="font-size:10px">(khana khaya)</span></button>
-        <button onclick="saveMemberAtt('${date}','nomeal')" style="${btnStyle('nomeal','var(--purple)','#EDE9FE')}">🚫<br>No Meal<br><span style="font-size:10px">(nahi khaya)</span></button>
-        <button onclick="saveMemberAtt('${date}','absent')" style="${btnStyle('absent','var(--red)','#FEE2E2')}">❌<br>Absent<br><span style="font-size:10px">(nahi aaya)</span></button>
-      </div>
-      ${onLeave?'<div style="margin-top:10px;font-size:12px;color:var(--amber);font-weight:700">✈️ Is din leave pe thi — phir bhi change kar sakti ho</div>':''}
-      ${current?`<div style="margin-top:10px;font-size:12px;color:var(--gray)">Current: <b>${current==='present'?'✅ Present':current==='nomeal'?'🚫 No Meal':'❌ Absent'}</b></div>`:'<div style="margin-top:10px;font-size:12px;color:var(--gray)">Abhi tak mark nahi hua</div>'}
-    </div>`;
-  }).catch(err=>{
-    statusEl.innerHTML=`<div style="background:#FEE2E2;border-radius:10px;padding:12px;color:var(--red);font-size:13px">❌ Data load nahi hua. Internet check karo.</div>`;
-  });
-}
-
-function saveMemberAtt(date,status){
-  if(!S.currentUser)return;
-  const statusEl=document.getElementById('memberAttDayStatus');
-  statusEl.innerHTML=`<div style="text-align:center;padding:14px;color:var(--gray)">⏳ Saving...</div>`;
-  fbUpdate('attendance/'+date,{[S.currentUser.id]:status}).then(()=>{
-    showToast(status==='present'?'✅ Present save ho gaya!':status==='nomeal'?'🚫 No Meal save ho gaya!':'❌ Absent save ho gaya!');
-    // Firebase se fresh data fetch karo
-    setTimeout(()=>renderMemberAttDay(),600);
-    // Home bhi update karo
-    renderHome();
-  }).catch(()=>{
-    showToast('❌ Save nahi hua — internet check karo');
-    setTimeout(()=>renderMemberAttDay(),600);
-  });
 }
 
 // ============================================================
@@ -1813,47 +1693,15 @@ function renderNotices(){
 function renderMyAttendance(){
   if(!S.currentUser)return;
   const id=S.currentUser.id;const mo=thisMonth();
-
-  // Set date limits for member
-  const memberAttDateEl=document.getElementById('memberAttDate');
-  if(memberAttDateEl){
-    memberAttDateEl.max=today();
-    const oneMonthAgo=new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth()-1);
-    memberAttDateEl.min=oneMonthAgo.toISOString().split('T')[0];
-    if(!memberAttDateEl.value)memberAttDateEl.value=today();
-  }
-
   const pd=getMonthDaysPresent(id,mo);
-  const nm=Object.entries(S.attendance||{}).filter(([d,obj])=>d.startsWith(mo)&&obj&&obj[id]==='nomeal').length;
-  const ab=Object.entries(S.attendance||{}).filter(([d,obj])=>d.startsWith(mo)&&obj&&obj[id]==='absent').length;
+  const abd=Object.entries(S.attendance||{}).filter(([d,obj])=>d.startsWith(mo)&&obj&&obj[id]==='absent').length;
   const days=Object.entries(S.attendance||{}).filter(([d])=>d.startsWith(mo)).sort((a,b)=>b[0].localeCompare(a[0]));
   const el=document.getElementById('myAttendanceContent');
-  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-    <div style="background:#D1FAE5;border-radius:12px;padding:10px;text-align:center">
-      <div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--teal)">${pd}</div>
-      <div style="font-size:10px;color:#065F46;font-weight:700">Present</div>
-    </div>
-    <div style="background:#EDE9FE;border-radius:12px;padding:10px;text-align:center">
-      <div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--purple)">${nm}</div>
-      <div style="font-size:10px;color:#5B21B6;font-weight:700">No Meal</div>
-    </div>
-    <div style="background:#FEE2E2;border-radius:12px;padding:10px;text-align:center">
-      <div style="font-family:Nunito;font-size:20px;font-weight:900;color:var(--red)">${ab}</div>
-      <div style="font-size:10px;color:#991B1B;font-weight:700">Absent</div>
-    </div>
-  </div>`+
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px"><div style="background:#D1FAE5;border-radius:12px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--teal)">${pd}</div><div style="font-size:11px;color:#065F46;font-weight:700">Present</div></div><div style="background:#FEE2E2;border-radius:12px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--red)">${abd}</div><div style="font-size:11px;color:#991B1B;font-weight:700">Absent</div></div><div style="background:var(--light-gray);border-radius:12px;padding:12px;text-align:center"><div style="font-family:Nunito;font-size:22px;font-weight:900;color:var(--purple)">${days.length}</div><div style="font-size:11px;color:var(--gray);font-weight:700">Tracked</div></div></div>`+
   (days.length?days.map(([d,obj])=>{
     const status=obj[id];const off=isMessOff(d);const onLeave=isOnLeave(id,d);
-    const bg=off?'#FEE2E2':onLeave?'#FEF3C7':status==='present'?'#D1FAE5':status==='nomeal'?'#EDE9FE':status==='absent'?'#FEE2E2':'var(--light-gray)';
-    const icon=off?'🚫':onLeave?'✈️':status==='present'?'✅':status==='nomeal'?'🚫':status==='absent'?'❌':'—';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${bg};border-radius:10px;margin-bottom:6px">
-      <span style="font-weight:700;font-size:13px">${fmtDate(d)}</span>
-      <span style="font-size:16px">${icon}</span>
-    </div>`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${off?'#FEE2E2':onLeave?'#FEF3C7':status==='present'?'#D1FAE5':status==='absent'?'#FEE2E2':'var(--light-gray)'};border-radius:10px;margin-bottom:6px"><span style="font-weight:700;font-size:13px">${fmtDate(d)}</span><span style="font-size:18px">${off?'🚫':onLeave?'✈️':status==='present'?'✅':status==='absent'?'❌':'—'}</span></div>`;
   }).join(''):'<p style="color:var(--gray);text-align:center;padding:14px">No attendance this month</p>');
-
-  // Leave history
   const leaves=Object.values(S.leaves||{}).filter(l=>l.memberId===id).sort((a,b)=>(b.applied||'').localeCompare(a.applied||''));
   const leaveEl=document.getElementById('myLeaveHistory');
   leaveEl.innerHTML=leaves.length?leaves.map(l=>`<div class="leave-item"><div style="font-weight:700;font-size:13px">📅 ${fmtDate(l.from)}${l.to&&l.to!==l.from?' → '+fmtDate(l.to):''}</div><div style="font-size:12px;color:var(--gray);margin-top:3px">${escHtml(l.reason||'On leave')}</div></div>`).join(''):`<div class="empty-state"><div class="empty-icon">📆</div><p class="empty-text">No leave notes</p></div>`;
@@ -1875,7 +1723,7 @@ function markMyAttendance(status){
   if(isMessOff(t2)){showToast('🚫 Mess is OFF today');return;}
   if(status===null){fbRemove('attendance/'+t2+'/'+S.currentUser.id);}
   else{fbUpdate('attendance/'+t2,{[S.currentUser.id]:status});}
-  showToast(status==='present'?'✅ Present!':status==='nomeal'?'🚫 No Meal!':status==='absent'?'❌ Absent':'Status cleared');
+  showToast(status==='present'?'✅ Present!':status==='absent'?'❌ Absent':'Status cleared');
 }
 
 // ============================================================

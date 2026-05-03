@@ -2,8 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌟 Tara Foodies</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tara Foodies</title>
+
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="Tara Foodies">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tara Foodies">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F43F5E">
+<meta name="description" content="Ghar jaisa khana, apna hisaab — Girls Mess Manager">
+
+<!-- PWA Manifest (inline) -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Tara+Foodies%22%2C%22short_name%22%3A%22Tara+Foodies%22%2C%22description%22%3A%22Ghar+jaisa+khana%2C+apna+hisaab%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F43F5E%22%2C%22theme_color%22%3A%22%23F43F5E%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fem-content.zobj.net%2Fsource%2Ftwitter%2F376%2Fglowing-star_1f31f.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+
+<!-- iOS Icons -->
+<link rel="apple-touch-icon" href="https://em-content.zobj.net/source/twitter/376/glowing-star_1f31f.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -21,7 +37,16 @@
   --radius:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+/* PWA INSTALL BANNER */
+#installBanner{display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,var(--rose),var(--purple));color:white;padding:14px 16px;z-index:9990;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);}
+.install-text{font-size:13px;font-weight:700;flex:1;}
+.install-text span{font-size:11px;font-weight:400;opacity:0.85;display:block;margin-top:2px;}
+.install-btn{background:white;color:var(--rose);border:none;padding:8px 16px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.install-dismiss{background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
 /* LOADING */
 #loadingScreen{position:fixed;inset:0;background:linear-gradient(145deg,#F43F5E,#7C3AED);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:white;}
@@ -275,6 +300,16 @@ body.member-mode .member-tab{display:flex;}
 </style>
 </head>
 <body>
+
+<!-- PWA INSTALL BANNER -->
+<div id="installBanner">
+  <div class="install-text">
+    🌟 Tara Foodies install karo!
+    <span>Home screen pe app ki tarah use karo</span>
+  </div>
+  <button class="install-btn" onclick="installApp()">📲 Install</button>
+  <button class="install-dismiss" onclick="dismissInstallBanner()">✕</button>
+</div>
 
 <!-- LOADING -->
 <div id="loadingScreen">
@@ -614,6 +649,18 @@ body.member-mode .member-tab{display:flex;}
     <!-- SETTINGS -->
     <div class="section" id="section-settings">
       <div class="card">
+        <div class="card-title">📲 App Install Karo</div>
+        <div style="background:linear-gradient(135deg,#F5F3FF,#FFF1F3);border-radius:12px;padding:16px;margin-bottom:10px">
+          <div style="font-weight:700;font-size:14px;margin-bottom:8px">🤖 Android ke liye:</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.6">1. Browser menu (3 dots) kholo<br>2. "Add to Home screen" click karo<br>3. "Install" ya "Add" dabao<br>4. Done! 🎉</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#F5F3FF,#FFF1F3);border-radius:12px;padding:16px;margin-bottom:10px">
+          <div style="font-weight:700;font-size:14px;margin-bottom:8px">🍎 iPhone ke liye:</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.6">1. Safari mein link kholo<br>2. Share button (📤) dabao<br>3. "Add to Home Screen" dabao<br>4. "Add" confirm karo<br>5. Done! 🎉</div>
+        </div>
+        <button class="btn btn-rose" onclick="installApp()" id="pwaInstallBtn">📲 Install App</button>
+      </div>
+      <div class="card">
         <div class="card-title">⚙️ Feature Controls</div>
         <div class="toggle-row">
           <div><div style="font-weight:600;font-size:14px">📣 Complaint Box</div><div style="font-size:11px;color:var(--gray)">Members can submit anonymous complaints</div></div>
@@ -833,7 +880,8 @@ let S={
 };
 let currentLang=localStorage.getItem('mm_lang')||'en';
 let pinValue='', pinCallback=null, activeChatMemberId=null, attState={};
-let reminderCount=0, reminderTimer=null;
+let reminderCount=0, reminderTimer=null, notifTimer=null;
+let memberChatRef=null, chatListenerKey=null, chatListener=null;
 
 // ============================================================
 // FIREBASE LISTENERS
@@ -987,6 +1035,10 @@ function loginAs(type,memberId){
   S.userType=type;
   S.currentUser=memberId?safeArr(S.members).find(m=>m.id===memberId):null;
   if(type==='member'&&!S.currentUser){showToast('❌ Member not found');return;}
+
+  // Save session to localStorage so reload nahi karega logout
+  localStorage.setItem('tf_session',JSON.stringify({type,memberId}));
+
   document.body.classList.remove('admin-mode','member-mode');
   document.body.classList.add(type+'-mode');
   const uname=type==='admin'?'👑 '+S.adminName:(S.currentUser.memberType==='tiffin'?'🛵':'🏠')+' '+S.currentUser.name;
@@ -994,13 +1046,16 @@ function loginAs(type,memberId){
   document.getElementById('loginScreen').classList.remove('show');
   document.getElementById('app').classList.add('show');
   setDates();renderAll();showSection('home');
-  if(type==='admin')loadSettings();
   updateChatBadges();
-  if(type==='member')startReminderSchedule();
+  if(type==='admin'){loadSettings();setupAdminNotifications();}
+  if(type==='member'){startReminderSchedule();setupMemberNotifications();}
 }
 function logout(){
+  // Clear saved session
+  localStorage.removeItem('tf_session');
   S.userType=null;S.currentUser=null;activeChatMemberId=null;
   if(reminderTimer){clearInterval(reminderTimer);reminderTimer=null;}
+  if(notifTimer){clearInterval(notifTimer);notifTimer=null;}
   reminderCount=0;
   document.getElementById('loginScreen').classList.add('show');
   document.getElementById('app').classList.remove('show');
@@ -1009,6 +1064,7 @@ function logout(){
   document.getElementById('loginFormArea').innerHTML='';
   ['typeHostel','typeTiffin'].forEach(id=>document.getElementById(id).classList.remove('selected'));
 }
+
 function toggleLang(){
   currentLang=currentLang==='en'?'hi':'en';
   localStorage.setItem('mm_lang',currentLang);
@@ -1425,29 +1481,40 @@ function sendMemberMsg(){
   if(!S.currentUser)return;
   const input=document.getElementById('memberChatInput');
   const msg=input.value.trim();if(!msg)return;
+  input.value='';
   fbPush('chats/'+S.currentUser.id,{from:'member',msg,time:Date.now()});
   const cur=safeObj(safeObj(S.chatUnread)[S.currentUser.id]).forAdmin||0;
   fbUpdate('chatUnread/'+S.currentUser.id,{forAdmin:cur+1});
-  input.value='';
+  sendNotification('💬 '+S.currentUser.name+' ka message',msg,'chat-admin');
 }
 function sendAdminMsg(){
   if(!activeChatMemberId)return;
   const input=document.getElementById('adminChatInput');
   const msg=input.value.trim();if(!msg)return;
+  input.value='';
   fbPush('chats/'+activeChatMemberId,{from:'admin',msg,time:Date.now()});
   const cur=safeObj(safeObj(S.chatUnread)[activeChatMemberId]).forMember||0;
   fbUpdate('chatUnread/'+activeChatMemberId,{forMember:cur+1});
-  input.value='';
 }
-function chatMsgsHtml(msgs,myRole){
-  return msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.from===myRole?'flex-end':'flex-start'}"><div class="chat-bubble ${m.from===myRole?'me':'other'}">${esc(m.msg)}<div class="chat-time">${fmtTime(m.time)}</div></div></div>`).join('');
-}
+// Real-time member chat listener
 function renderMemberChat(){
   if(!S.currentUser)return;
-  const msgs=Object.values(safeObj(S.chats)[S.currentUser.id]||{}).sort((a,b)=>a.time-b.time);
-  const el=document.getElementById('memberChatMessages');
-  el.innerHTML=msgs.length?chatMsgsHtml(msgs,'member'):`<div class="empty-state"><div class="empty-icon">💬</div><p style="font-size:13px">Admin se kuch pucho!</p></div>`;
-  el.scrollTop=el.scrollHeight;
+  markMemberChatRead();
+  if(memberChatRef)memberChatRef.off();
+  memberChatRef=db.ref('chats/'+S.currentUser.id);
+  memberChatRef.on('value',snap=>{
+    const msgs=Object.values(snap.val()||{}).sort((a,b)=>a.time-b.time);
+    const el=document.getElementById('memberChatMessages');if(!el)return;
+    const wasAtBottom=el.scrollHeight-el.scrollTop<=el.clientHeight+60;
+    if(!msgs.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">💬</div><p style="font-size:13px">Admin se kuch pucho!</p></div>`;return;}
+    el.innerHTML=msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.from==='member'?'flex-end':'flex-start'}"><div class="chat-bubble ${m.from==='member'?'me':'other'}">${esc(m.msg)}<div class="chat-time">${fmtTime(m.time)}</div></div></div>`).join('');
+    if(wasAtBottom)el.scrollTop=el.scrollHeight;
+    // Notify member if admin replied
+    const lastMsg=msgs[msgs.length-1];
+    if(lastMsg&&lastMsg.from==='admin'&&Date.now()-lastMsg.time<3000){
+      sendNotification('💬 Admin ka reply',lastMsg.msg,'chat-reply');
+    }
+  });
 }
 function renderAdminChatList(){
   const el=document.getElementById('adminChatMemberList');
@@ -1466,15 +1533,27 @@ function openAdminChat(memberId){
   const m=safeArr(S.members).find(x=>x.id===memberId);
   document.getElementById('adminChatTitle').textContent='💬 '+(m?m.name:'Member');
   document.getElementById('adminChatBox').style.display='block';
-  renderAdminChat(memberId);renderAdminChatList();
+  // Real-time listener for admin chat
+  if(chatListener&&chatListenerKey){
+    db.ref('chats/'+chatListenerKey).off('value',chatListener);
+  }
+  chatListenerKey=memberId;
+  chatListener=db.ref('chats/'+memberId).on('value',snap=>{
+    const msgs=Object.values(snap.val()||{}).sort((a,b)=>a.time-b.time);
+    const el=document.getElementById('adminChatMessages');if(!el)return;
+    const wasAtBottom=el.scrollHeight-el.scrollTop<=el.clientHeight+50;
+    el.innerHTML=msgs.length?msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.from==='admin'?'flex-end':'flex-start'}"><div class="chat-bubble ${m.from==='admin'?'me':'other'}">${esc(m.msg)}<div class="chat-time">${fmtTime(m.time)}</div></div></div>`).join(''):`<div class="empty-state"><div class="empty-icon">💬</div><p style="font-size:13px">No messages yet</p></div>`;
+    if(wasAtBottom)el.scrollTop=el.scrollHeight;
+  });
+  renderAdminChatList();
 }
-function closeAdminChatBox(){activeChatMemberId=null;document.getElementById('adminChatBox').style.display='none';renderAdminChatList();}
-function renderAdminChat(memberId){
-  const msgs=Object.values(safeObj(S.chats)[memberId]||{}).sort((a,b)=>a.time-b.time);
-  const el=document.getElementById('adminChatMessages');
-  el.innerHTML=msgs.length?chatMsgsHtml(msgs,'admin'):`<div class="empty-state"><div class="empty-icon">💬</div><p style="font-size:13px">No messages yet</p></div>`;
-  el.scrollTop=el.scrollHeight;
+function closeAdminChatBox(){
+  if(chatListener&&chatListenerKey){db.ref('chats/'+chatListenerKey).off('value',chatListener);chatListener=null;chatListenerKey=null;}
+  activeChatMemberId=null;
+  document.getElementById('adminChatBox').style.display='none';
+  renderAdminChatList();
 }
+function renderAdminChat(memberId){} // Legacy — ab openAdminChat handle karta hai
 
 // ============================================================
 // RATINGS
@@ -1964,7 +2043,7 @@ function generateMonthlyBill(){
 }
 
 // ============================================================
-// NOTIFICATIONS
+// NOTIFICATIONS — FULL SYSTEM
 // ============================================================
 function requestNotifPermission(){
   if(!('Notification' in window)){showToast('❌ Browser notifications support nahi karta');return;}
@@ -1975,15 +2054,71 @@ function updateNotifStatus(){
   if(!('Notification' in window)){s.textContent='Not supported';b.style.display='none';return;}
   if(Notification.permission==='granted'){s.textContent='✅ Notifications enabled';b.textContent='ON ✓';b.style.background='var(--teal)';}
   else if(Notification.permission==='denied'){s.textContent='❌ Blocked — browser settings se enable karo';b.textContent='Blocked';}
-  else{s.textContent='Click to enable push notifications';b.textContent='Enable';}
+  else{s.textContent='Click to enable notifications';b.textContent='Enable';}
 }
 function sendNotification(title,body,tag){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
-  try{new Notification(title,{body,tag:tag||'tara-foodies',icon:'https://em-content.zobj.net/source/twitter/376/glowing-star_1f31f.png'});}catch(e){}
+  try{
+    const n=new Notification(title,{body,tag:tag||'tara-foodies',
+      icon:'https://em-content.zobj.net/source/twitter/376/glowing-star_1f31f.png',
+      requireInteraction:false});
+    n.onclick=()=>{window.focus();n.close();};
+  }catch(e){}
+}
+
+// Admin notifications setup
+function setupAdminNotifications(){
+  if(S.userType!=='admin'||!db)return;
+  // Naya payment screenshot
+  db.ref('screenshots').on('child_added',snap=>{
+    const s=snap.val();if(!s||s.status!=='pending')return;
+    if(Date.now()-new Date(s.date+'T00:00:00').getTime()>86400000)return;
+    const m=safeArr(S.members).find(x=>x.id===s.memberId);
+    sendNotification('💰 Payment Proof!','₹'+s.amount+' — '+(m?m.name:'Someone'),'ss-'+snap.key);
+  });
+  // Naya leave
+  db.ref('leaves').on('child_added',snap=>{
+    const l=snap.val();if(!l)return;
+    const m=safeArr(S.members).find(x=>x.id===l.memberId);if(!m)return;
+    if(Date.now()-new Date(l.applied+'T00:00:00').getTime()>300000)return;
+    sendNotification('✈️ Leave Applied!',m.name+' ne leave apply ki: '+fmtDate(l.from),'leave-'+snap.key);
+  });
+  // Naya chat message
+  db.ref('chats').on('child_added',memberSnap=>{
+    db.ref('chats/'+memberSnap.key).on('child_added',msgSnap=>{
+      const msg=msgSnap.val();if(!msg||msg.from!=='member')return;
+      if(Date.now()-msg.time>5000)return;
+      const m=safeArr(S.members).find(x=>x.id===memberSnap.key);
+      sendNotification('💬 '+(m?m.name:'Member')+' ka message',msg.msg,'chat-'+memberSnap.key);
+    });
+  });
+}
+
+// Member notifications setup
+function setupMemberNotifications(){
+  if(S.userType!=='member'||!S.currentUser||!db)return;
+  // Payment verify/reject
+  db.ref('screenshots').on('child_changed',snap=>{
+    const s=snap.val();if(!s||s.memberId!==S.currentUser.id)return;
+    if(s.status==='approved')sendNotification('✅ Payment Verified!','Teri payment ₹'+s.amount+' verify ho gayi 🎉','pay-ok');
+    if(s.status==='rejected')sendNotification('❌ Payment Rejected','Admin ne payment reject ki — dobara bhejo','pay-no');
+  });
+  // Naya notice
+  db.ref('notices').on('child_added',snap=>{
+    const n=snap.val();if(!n)return;
+    if(Date.now()-new Date(n.date+'T00:00:00').getTime()>300000)return;
+    sendNotification('📢 New Notice: '+n.title,n.body,'notice-'+snap.key);
+  });
+  // Admin ka reply
+  db.ref('chats/'+S.currentUser.id).on('child_added',snap=>{
+    const msg=snap.val();if(!msg||msg.from!=='admin')return;
+    if(Date.now()-msg.time>5000)return;
+    sendNotification('💬 Admin ka reply',msg.msg,'admin-reply');
+  });
 }
 
 // ============================================================
-// ATTENDANCE REMINDER POPUP
+// ATTENDANCE REMINDER — 8 BAJE DAILY, 3 BAAR
 // ============================================================
 function checkAttendanceReminder(){
   if(!S.currentUser||S.userType!=='member')return;
@@ -1993,7 +2128,10 @@ function checkAttendanceReminder(){
   if(isOnLeave(S.currentUser.id,t2))return;
   if(!db)return;
   db.ref('attendance/'+t2+'/'+S.currentUser.id).once('value').then(snap=>{
-    if(!snap.val())showAttReminder();
+    if(!snap.val()){
+      showAttReminder();
+      sendNotification('🍽️ Attendance Reminder!',S.currentUser.name+', aaj ki attendance mark karo!','att-rem');
+    }
   }).catch(()=>{});
 }
 function showAttReminder(){
@@ -2012,24 +2150,28 @@ function markAttFromPopup(status){
   if(isMessOff(t2)){showToast('🚫 Mess is OFF today');dismissAttReminder();return;}
   fbUpdate('attendance/'+t2,{[S.currentUser.id]:status}).then(()=>{
     dismissAttReminder();
-    showToast(status==='present'?'✅ Present mark ho gaya!':status==='nomeal'?'🚫 No Meal mark ho gaya!':'❌ Absent mark ho gaya!');
+    showToast(status==='present'?'✅ Present!':status==='nomeal'?'🚫 No Meal!':'❌ Absent!');
     renderHome();
   });
 }
 function startReminderSchedule(){
   if(reminderTimer){clearInterval(reminderTimer);reminderTimer=null;}
+  if(notifTimer){clearInterval(notifTimer);notifTimer=null;}
   reminderCount=0;
-  // 3 second baad pehla check
-  setTimeout(()=>checkAttendanceReminder(),3000);
-  // Har 1 ghante mein max 2 baar aur check
-  reminderTimer=setInterval(()=>{
-    if(reminderCount>=2){clearInterval(reminderTimer);reminderTimer=null;return;}
-    if(!S.currentUser){clearInterval(reminderTimer);reminderTimer=null;return;}
-    db.ref('attendance/'+today()+'/'+S.currentUser.id).once('value').then(snap=>{
-      if(!snap.val()){checkAttendanceReminder();reminderCount++;}
-      else{clearInterval(reminderTimer);reminderTimer=null;}
-    }).catch(()=>{});
-  },60*60*1000);
+  // Login ke 3 sec baad check
+  setTimeout(()=>{reminderCount=0;checkAttendanceReminder();},3000);
+  // Har minute check — 8am, 9am, 10am pe remind (3 baar max)
+  notifTimer=setInterval(()=>{
+    if(!S.currentUser||S.userType!=='member')return;
+    const now=new Date();
+    const h=now.getHours();const m=now.getMinutes();
+    if(m===0&&(h===8||h===9||h===10)&&reminderCount<3){
+      checkAttendanceReminder();
+      reminderCount++;
+    }
+    // Reset at midnight
+    if(h===0&&m===0)reminderCount=0;
+  },60000);
 }
 
 // ============================================================
@@ -2078,6 +2220,132 @@ function shareReportWA(){
 }
 
 // ============================================================
+// PWA — INSTALL PROMPT + OFFLINE + SERVICE WORKER
+// ============================================================
+let deferredPrompt = null;
+
+// Install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner(){
+  // Only show if not already installed
+  if(window.matchMedia('(display-mode: standalone)').matches) return;
+  const banner = document.getElementById('installBanner');
+  if(banner) banner.style.display = 'flex';
+}
+
+function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(result => {
+    if(result.outcome === 'accepted'){
+      showToast('🎉 Tara Foodies install ho rahi hai!');
+    }
+    deferredPrompt = null;
+    const banner = document.getElementById('installBanner');
+    if(banner) banner.style.display = 'none';
+  });
+}
+
+function dismissInstallBanner(){
+  const banner = document.getElementById('installBanner');
+  if(banner) banner.style.display = 'none';
+  localStorage.setItem('installDismissed', '1');
+}
+
+// Check if already installed
+window.addEventListener('appinstalled', () => {
+  showToast('✅ Tara Foodies install ho gayi!');
+  const banner = document.getElementById('installBanner');
+  if(banner) banner.style.display = 'none';
+});
+
+// Online/Offline detection
+window.addEventListener('online', () => {
+  showToast('✅ Internet wapas aa gaya!');
+  document.getElementById('offlineBanner')?.remove();
+});
+
+window.addEventListener('offline', () => {
+  showToast('⚠️ Internet nahi hai — offline mode');
+  if(!document.getElementById('offlineBanner')){
+    const div = document.createElement('div');
+    div.id = 'offlineBanner';
+    div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#EF4444;color:white;text-align:center;padding:8px;font-size:13px;font-weight:700;z-index:9998;';
+    div.textContent = '⚠️ Offline — Internet check karo';
+    document.body.prepend(div);
+  }
+});
+
+// Register Service Worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    // Inline service worker as blob
+    const swCode = `
+const CACHE_NAME = 'tara-foodies-v1';
+const urlsToCache = ['/Tara-foodies/'];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache).catch(() => {});
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => 
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).catch(() => 
+      caches.match(event.request).then(r => r || caches.match('/Tara-foodies/'))
+    )
+  );
+});
+
+// Push notifications
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {title:'Tara Foodies', body:'New notification'};
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: 'https://em-content.zobj.net/source/twitter/376/glowing-star_1f31f.png',
+      badge: 'https://em-content.zobj.net/source/twitter/376/glowing-star_1f31f.png',
+      tag: data.tag || 'tara-foodies',
+      requireInteraction: false,
+      actions: data.actions || []
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow('/Tara-foodies/'));
+});
+    `;
+    const blob = new Blob([swCode], {type: 'application/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).then(reg => {
+      console.log('SW registered');
+    }).catch(err => {
+      console.log('SW registration failed (normal for localhost):', err);
+    });
+  });
+}
+
+// ============================================================
 // INIT
 // ============================================================
 window.addEventListener('load',()=>{
@@ -2105,9 +2373,51 @@ window.addEventListener('load',()=>{
     setupListeners();setDates();
     document.getElementById('langLabel').textContent='हिं';
     updateNotifStatus();
+
+    // Check if already installed as PWA
+    if(window.matchMedia('(display-mode: standalone)').matches){
+      const btn=document.getElementById('pwaInstallBtn');
+      if(btn){btn.textContent='✅ App Installed!';btn.style.background='var(--teal)';btn.disabled=true;}
+    }
+
+    // Show install banner if not dismissed
+    if(!localStorage.getItem('installDismissed')&&!window.matchMedia('(display-mode: standalone)').matches){
+      setTimeout(()=>showInstallBanner(),5000);
+    }
+
+    // Hide loading
     setTimeout(()=>{
       document.getElementById('loadingScreen').style.display='none';
-      document.getElementById('loginScreen').classList.add('show');
+
+      // Try restore session from localStorage
+      const saved=localStorage.getItem('tf_session');
+      if(saved){
+        try{
+          const {type,memberId}=JSON.parse(saved);
+          if(type==='admin'){
+            loginAs('admin',null);
+          } else if(type==='member'&&memberId){
+            // Wait for members data to load
+            const tryRestore=()=>{
+              const member=safeArr(S.members).find(m=>m.id===memberId);
+              if(member){
+                loginAs('member',memberId);
+              } else {
+                // Members not loaded yet — try again
+                setTimeout(tryRestore,500);
+              }
+            };
+            tryRestore();
+          } else {
+            document.getElementById('loginScreen').classList.add('show');
+          }
+        }catch(e){
+          localStorage.removeItem('tf_session');
+          document.getElementById('loginScreen').classList.add('show');
+        }
+      } else {
+        document.getElementById('loginScreen').classList.add('show');
+      }
     },1500);
   }).catch(err=>{showLoadingError(err.message);});
 });
